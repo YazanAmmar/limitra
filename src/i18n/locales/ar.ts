@@ -1,0 +1,77 @@
+import { LocaleStrings } from '../types';
+
+const ar: LocaleStrings = {
+  popup: {
+    title: 'ليمترا',
+    maxVideos: 'الحد الأقصى للفيديوهات:',
+    timeLimit: 'الوقت المسموح (دقائق):',
+    saveBtn: 'حفظ',
+    savedMsg: 'تم الحفظ!',
+    stopSpamming: 'شو عم تعمل؟ روح اشتغل!',
+    usageToday: 'الاستخدام اليومي',
+    videosUnit: 'فيديو',
+    timeTitle: 'الوقت',
+    minsUnit: 'دقائق',
+    reason_count: 'السبب: تجاوز عدد الفيديوهات',
+    reason_time: 'السبب: انتهاء الوقت المسموح',
+    reason_bypass: 'السبب: محاولة تحايل (Bypass)',
+  },
+  dashboard: {
+    title: 'مركز قيادة ليمترا',
+    sidebarGeneral: 'الإعدادات العامة',
+    sidebarAI: 'المساعد الذكي (AI)',
+    sidebarAnalytics: 'الإحصائيات',
+    comingSoon: 'قريباً',
+    languageLabel: 'اللغة (Language):',
+    trackingMode: 'نمط التتبع (مكافحة التحايل):',
+    modeStrict: 'صارم (احسب الوقت دائماً طالما التبويبة مفتوحة)',
+    modePlaying: 'التشغيل فقط (احسب فقط عند عمل الفيديو)',
+    modeSmart: 'ذكي (احسب عند التشغيل أو عند قراءة التعليقات والتمرير)',
+    groupCustomization: 'تخصيص الواجهة',
+    descLanguage: 'اختر لغة الواجهة المفضلة لك. التغييرات تطبق فوراً.',
+    groupSecurity: 'الحماية والتتبع',
+    descTracking: 'حدد مدى صرامة ليمترا في تتبع نشاطك وحساب وقتك المستهلك.',
+    themeLabel: 'المظهر (Theme)',
+    descTheme: 'اختر نظام الألوان المفضل لك.',
+    themeLight: 'فاتح',
+    themeDark: 'داكن',
+    themeAuto: 'تلقائي (حسب النظام)',
+    toneLabel: 'نبرة الاقتباس',
+    descTone: 'اختر حدة أو أسلوب الاقتباسات التي تظهر عند الحظر.',
+    sidebarAbout: 'حول',
+    aboutTitle: 'حول ليمترا',
+    aboutDesc: 'مبنية لحماية انتباهك وتركيزك.',
+  },
+  tones: {
+    random: 'عشوائي (منوع)',
+    gentle: 'لطيف',
+    harsh: 'قاسي',
+    philosophical: 'فلسفي',
+  },
+  quotes: {
+    gentle: [
+      'خذ استراحة. لقد استحققتها.',
+      'لا بأس بالراحة الآن.',
+      'عيناك بحاجة لبعض الراحة من الشاشة.',
+    ],
+    harsh: [
+      'توقف عن تضييع حياتك في التمرير.',
+      'أنت تترك الخوارزمية تتحكم بك. أمر مؤسف.',
+      'اذهب وافعل شيئاً مفيداً.',
+    ],
+    philosophical: [
+      'الوقت الذي تستمتع بتضييعه ليس ضائعاً، ولكن هل هذا استمتاع حقاً؟',
+      'العقل هو كل شيء. أنت تصبح ما تستهلكه.',
+      'التحكم بالذات > الاندفاع.',
+    ],
+  },
+  overlay: {
+    badgeBlocked: 'محظور',
+    unlocksIn: 'يُفك الحظر بعد:',
+    unlocking: 'جاري فك الحظر...',
+    clickToCopy: 'اضغط للنسخ',
+    copiedText: 'تم النسخ!',
+  },
+};
+
+export default ar;

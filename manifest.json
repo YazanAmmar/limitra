@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Limitra",
+  "version": "1.0.0",
+  "description": "If willpower worked, you wouldn't be here. Limitra enforces the limit.",
+  "default_locale": "en",
+  "permissions": ["storage", "activeTab", "scripting", "alarms"],
+  "host_permissions": ["*://*.youtube.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "assets/manifest/16x16.png",
+    "32": "assets/manifest/32x32.png",
+    "48": "assets/manifest/48x48.png",
+    "128": "assets/manifest/128x128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/manifest/16x16.png",
+      "32": "assets/manifest/32x32.png",
+      "48": "assets/manifest/48x48.png",
+      "128": "assets/manifest/128x128.png"
+    }
+  },
+  "options_ui": {
+    "page": "settings/dashboard.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}
