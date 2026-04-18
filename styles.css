@@ -13,7 +13,7 @@
 /* --- Dark Mode Palette --- */
 :root.dark,
 .limitra-overlay.dark {
-  --bg-main: #111111;
+  --bg-main: #171717;
   --bg-surface: #1c1c1c;
   --text-main: #fafafa;
   --ui-border: #fafafa;
