@@ -238,6 +238,7 @@ For collaborations or commercial inquiries, feel free to [reach out](mailto:supp
 ## Contact / Links
 
 - **Website**: <https://limitra.xyz>
+- **Privacy Policy**: <https://limitra.xyz/privacy>
 - **Support**: <https://limitra.xyz/#support>
 - **GitHub Repo**: <https://github.com/YazanAmmar/limitra>
 - **Releases**: <https://github.com/YazanAmmar/limitra/releases>
