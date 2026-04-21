@@ -1,7 +1,7 @@
 # Limitra™
 
 [![GitHub all releases](https://img.shields.io/github/downloads/YazanAmmar/limitra/total?style=flat&color=brightgreen)](https://github.com/YazanAmmar/limitra/releases)
-[![Platform](https://img.shields.io/badge/platform-Chrome%20Extension-4285F4?style=flat-square)](https://chrome.google.com/webstore)
+[![Platform](https://img.shields.io/badge/platform-Chrome%20Extension-4285F4?style=flat-square)](https://chromewebstore.google.com/detail/limitra/gbokphfkigfopbhfeeeiibifoaaldcjo)
 [![Release](https://img.shields.io/github/v/release/YazanAmmar/limitra?label=version)](https://github.com/YazanAmmar/limitra/releases)
 [![Supported Languages: 2 Built-in](https://img.shields.io/badge/languages-2%20built--in-blue.svg)](https://github.com/YazanAmmar/limitra/tree/main/src/i18n/locales)
 [![GitHub Stars](https://img.shields.io/github/stars/YazanAmmar/limitra.svg?style=flat&color=yellow)](https://github.com/YazanAmmar/limitra/stargazers)
@@ -17,7 +17,7 @@
 
 <div align="center">
 
-[limitra.xyz](https://limitra.xyz) · [Report a Bug](https://github.com/YazanAmmar/limitra/issues) · [Support the Project](https://limitra.xyz/#support)
+[Report a Bug](https://github.com/YazanAmmar/limitra/issues) · [limitra.xyz](https://limitra.xyz) · [Support the Project](https://limitra.xyz/#support)
 
 </div>
 
@@ -34,6 +34,8 @@ Limitra is a Chromium extension designed to **enforce hard limits on how you spe
 - [Supported Languages](#supported-languages)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
+  - [Install Limitra](#install-limitra-recommended)
+  - [Build from source](#build-from-source-developers)
 - [Changelog (Summary)](#changelog-summary)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -158,12 +160,24 @@ src/
 
 ## Getting Started
 
-### Prerequisites
+### Install Limitra (Recommended)
+
+The easiest and most secure way to install Limitra and receive automatic updates:
+
+- **[Add to Chrome](https://chromewebstore.google.com/detail/limitra/gbokphfkigfopbhfeeeiibifoaaldcjo)**
+
+> Firefox and Safari support coming soon.
+
+### Build from source (Developers)
+
+If you want to contribute or build the extension locally:
+
+#### Prerequisites
 
 - Node.js 18+
 - Chrome / Chromium
 
-### Install & Build
+#### Install & Build
 
 ```bash
 git clone https://github.com/YazanAmmar/limitra.git
@@ -180,14 +194,14 @@ npm run dev
 npm run build
 ```
 
-### Load in Chrome
+#### Load in Chrome
 
 1. Open `chrome://extensions`
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked**
 4. Select the `dist/` folder
 
-### Run Tests
+#### Run Tests
 
 ```bash
 npm test
@@ -238,6 +252,7 @@ For collaborations or commercial inquiries, feel free to [reach out](mailto:supp
 ## Contact / Links
 
 - **Website**: <https://limitra.xyz>
+- **Chrome Web Store**: <https://chromewebstore.google.com/detail/limitra/gbokphfkigfopbhfeeeiibifoaaldcjo>
 - **Privacy Policy**: <https://limitra.xyz/privacy>
 - **Support**: <https://limitra.xyz/#support>
 - **GitHub Repo**: <https://github.com/YazanAmmar/limitra>
