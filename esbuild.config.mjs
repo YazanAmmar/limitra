@@ -37,7 +37,7 @@ const common = {
   minify: isProd,
   target: 'es2020',
   platform: 'browser',
-  format: 'esm'
+  format: 'esm',
 };
 
 const context = await esbuild.context({
@@ -48,6 +48,8 @@ const context = await esbuild.context({
     {
       name: 'copy-assets',
       setup(build) {
+        let isWatchingExtra = false;
+
         build.onEnd(() => {
           copyFileToDir('manifest.json', 'dist');
           copyFileToDir('styles.css', 'dist');
@@ -57,6 +59,29 @@ const context = await esbuild.context({
           copyDirRecursive('src/assets', 'dist/assets');
 
           console.log('[+] Build finished');
+
+          if (!isWatchingExtra && !isProd) {
+            isWatchingExtra = true;
+
+            let stylesTimeout;
+            let docsTimeout;
+
+            fs.watch('styles.css', () => {
+              clearTimeout(stylesTimeout);
+              stylesTimeout = setTimeout(() => {
+                console.log('[watch] styles.css changed');
+                copyFileToDir('styles.css', 'dist');
+              }, 100);
+            });
+
+            fs.watch('docs', { recursive: true }, () => {
+              clearTimeout(docsTimeout);
+              docsTimeout = setTimeout(() => {
+                console.log('[watch] docs changed');
+                copyDirRecursive('docs', 'dist/docs');
+              }, 100);
+            });
+          }
         });
       },
     },

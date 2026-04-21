@@ -27,10 +27,15 @@ function updateUITexts() {
     t.dashboard.languageLabel;
   (document.getElementById('lbl-dash-tracking') as HTMLElement).textContent =
     t.dashboard.trackingMode;
-  (document.getElementById('opt-strict') as HTMLOptionElement).textContent = t.dashboard.modeStrict;
+
+  (document.getElementById('opt-strict') as HTMLOptionElement).textContent =
+    t.dashboard.modeStrictLabel;
+
   (document.getElementById('opt-playing') as HTMLOptionElement).textContent =
-    t.dashboard.modePlaying;
-  (document.getElementById('opt-smart') as HTMLOptionElement).textContent = t.dashboard.modeSmart;
+    t.dashboard.modePlayingLabel;
+
+  (document.getElementById('opt-smart') as HTMLOptionElement).textContent =
+    t.dashboard.modeSmartLabel;
 
   (document.getElementById('badge-analytics-soon') as HTMLElement).textContent =
     t.dashboard.comingSoon;
@@ -42,8 +47,6 @@ function updateUITexts() {
     t.dashboard.descLanguage;
   (document.getElementById('group-security') as HTMLElement).textContent =
     t.dashboard.groupSecurity;
-  (document.getElementById('desc-dash-tracking') as HTMLElement).textContent =
-    t.dashboard.descTracking;
 
   (document.getElementById('lbl-dash-theme') as HTMLElement).textContent = t.dashboard.themeLabel;
   (document.getElementById('desc-dash-theme') as HTMLElement).textContent = t.dashboard.descTheme;
@@ -85,6 +88,21 @@ function setupNavigation() {
   document.getElementById('nav-general')?.click();
 }
 
+function updateTrackingDescription(mode: string) {
+  const t = i18n.t;
+  const el = document.getElementById('desc-dash-tracking') as HTMLElement;
+
+  if (!el) return;
+
+  const map: Record<string, string> = {
+    strict: t.dashboard.modeStrict,
+    playing_only: t.dashboard.modePlaying,
+    smart: t.dashboard.modeSmart,
+  };
+
+  el.textContent = map[mode] || '';
+}
+
 async function init() {
   const savedTheme = await storage.getTheme();
   applyTheme(savedTheme);
@@ -93,6 +111,7 @@ async function init() {
   updateUITexts();
   setupNavigation();
 
+  const dashTrackingInput = document.getElementById('dash-tracking') as HTMLSelectElement;
   const dashLangInput = document.getElementById('dash-language') as HTMLSelectElement;
   dashLangInput.value = i18n.language;
   dashLangInput.addEventListener('change', (event) => {
@@ -101,15 +120,21 @@ async function init() {
     if (newLang !== i18n.language) {
       void i18n.setLocale(newLang).then(() => {
         updateUITexts();
+
+        const currentTracking = dashTrackingInput.value;
+        updateTrackingDescription(currentTracking);
       });
     }
   });
 
-  const dashTrackingInput = document.getElementById('dash-tracking') as HTMLSelectElement;
-  dashTrackingInput.value = await storage.getTrackingMode();
+  const savedTracking = await storage.getTrackingMode();
+  dashTrackingInput.value = savedTracking;
+  updateTrackingDescription(savedTracking);
   dashTrackingInput.addEventListener('change', async (event) => {
     const target = event.target as HTMLSelectElement;
+
     await storage.setTrackingMode(target.value);
+    updateTrackingDescription(target.value);
   });
 
   const dashThemeInput = document.getElementById('dash-theme') as HTMLSelectElement;
@@ -139,6 +164,9 @@ async function init() {
         void i18n.setLocale(newLang).then(() => {
           updateUITexts();
           dashLangInput.value = i18n.language;
+
+          const currentTracking = dashTrackingInput.value;
+          updateTrackingDescription(currentTracking);
         });
       }
       if (changes['limitra_quote_tone']) {

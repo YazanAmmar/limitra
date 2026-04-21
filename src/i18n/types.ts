@@ -24,13 +24,15 @@ export interface LocaleStrings {
     comingSoon: string;
     languageLabel: string;
     trackingMode: string;
+    modeStrictLabel: string;
+    modePlayingLabel: string;
+    modeSmartLabel: string;
     modeStrict: string;
     modePlaying: string;
     modeSmart: string;
     groupCustomization: string;
     descLanguage: string;
     groupSecurity: string;
-    descTracking: string;
     themeLabel: string;
     descTheme: string;
     themeLight: string;

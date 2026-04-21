@@ -465,12 +465,15 @@ button#save:disabled {
 
 .setting-control {
   flex-shrink: 0;
+  width: 160px;
 }
 
 .brutal-select {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  padding: 8px 12px;
+
+  padding: 8px 32px 8px 12px;
+
   border: 2px solid var(--ui-border);
   background-color: var(--bg-surface);
   color: var(--text-main);
@@ -479,11 +482,69 @@ button#save:disabled {
   transition: all 0.2s;
   cursor: pointer;
   min-width: 140px;
+  width: 100%;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'> <polyline points='6 9 12 15 18 9'/></svg>");
+
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 18px;
 }
 
 .brutal-select:active {
   transform: translate(2px, 2px);
   box-shadow: none;
+}
+
+.footer-muted-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.4;
+  color: var(--text-main);
+  text-decoration: none;
+
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  transition: all 0.2s ease;
+}
+
+.footer-muted-link:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.arrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+}
+
+.footer-muted-link:hover .arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.footer-icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
 }
 
 /* --- Overlay & Global Injections --- */

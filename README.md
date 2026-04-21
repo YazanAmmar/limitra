@@ -23,7 +23,7 @@
 
 > **Hard limits for your social media time (not reminders).**
 
-Limitra is a Chromium extension designed to **enforce hard limits on how you spend your time online** — not with reminders or nudges, but with strict blocking once your limits are reached, helping you break out of endless scrolling loops.
+Limitra is a Chromium extension designed to **enforce hard limits on how you spend your time online** - not with reminders or nudges, but with strict blocking once your limits are reached, helping you break out of endless scrolling loops.
 
 ## Table of Contents
 
