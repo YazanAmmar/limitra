@@ -47,7 +47,7 @@ Limitra is a Chromium extension designed to **enforce hard limits on how you spe
 
 Limitra is a Chromium extension designed to **enforce hard limits on YouTube Shorts**.
 
-Instead of reminders or nudges, it applies strict blocking once your limits are reached — helping you break out of endless scrolling loops.
+Instead of reminders or nudges, it applies strict blocking once your limits are reached - helping you break out of endless scrolling loops.
 
 You can define limits based on:
 
@@ -73,7 +73,7 @@ Quick access to your limits, real-time stats, and progress tracking.
 
 ### Blocking Overlay
 
-Limitra immediately blocks access when limits are reached — no reminders, no bypass.
+Limitra immediately blocks access when limits are reached - no reminders, no bypass.
 
 <p align="center">
 <img width="720" alt="Blocking Overlay" src="assets/screenshots/overlay.png" />
