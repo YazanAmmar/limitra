@@ -1,4 +1,5 @@
 /* --- Global Variables & Themes --- */
+
 :root {
   --bg-main: #fafafa;
   --bg-surface: #ffffff;
@@ -11,6 +12,7 @@
 }
 
 /* --- Dark Mode Palette --- */
+
 :root.dark,
 .limitra-overlay.dark {
   --bg-main: #171717;
@@ -21,6 +23,7 @@
 }
 
 /* --- Base Styles --- */
+
 body {
   margin: 0;
   padding: 0;
@@ -55,7 +58,25 @@ h3 {
   letter-spacing: -0.5px;
 }
 
-/* --- Common Components (Buttons, Selects, Toggles) --- */
+/* --- Custom scrollbar --- */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 0;
+}
+
+section {
+  scroll-margin-top: 100px;
+}
+
+/* --- Components --- */
+
 .logo {
   width: 90%;
   height: 90%;
@@ -167,33 +188,8 @@ h3 {
   background-color: #ffffff;
 }
 
-.about-social-btn {
-  background-color: var(--bg-surface);
-  border: 2px solid var(--ui-border);
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 2px 2px 0px 0px var(--ui-border);
-  transition: all 0.1s ease-in-out;
-  padding: 0;
-  box-sizing: border-box;
-  width: 48px;
-  height: 48px;
-}
-
-.about-social-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: none;
-}
-
-.about-social-btn svg {
-  width: 24px;
-  height: 24px;
-}
-
 /* --- Popup Specific --- */
+
 .popup-container {
   width: 320px;
   padding: 20px;
@@ -261,7 +257,7 @@ button#save {
   font-weight: 800;
   font-size: 15px;
   background-color: var(--accent);
-  color: #fff;
+  color: #ffffff;
   border: 2px solid var(--ui-border);
   cursor: pointer;
   box-shadow: 4px 4px 0px 0px var(--ui-border);
@@ -325,7 +321,32 @@ button#save:disabled {
   border-left: 2px solid var(--ui-border);
 }
 
+/* --- Popup Header Extras --- */
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border: 1px solid var(--ui-border);
+  margin-top: 2px;
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+}
+
+/* --- Usage --- */
+
+.usage-block {
+  margin-bottom: 12px;
+}
+
 /* --- Dashboard --- */
+
 .dashboard-header {
   max-width: 1200px;
   margin: 0 auto;
@@ -337,7 +358,6 @@ button#save:disabled {
 
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
@@ -383,7 +403,7 @@ button#save:disabled {
 
 .nav-item.active {
   background-color: var(--accent);
-  color: #fff;
+  color: #ffffff;
 }
 
 .dashboard-card {
@@ -396,7 +416,7 @@ button#save:disabled {
 .badge-soon {
   display: inline-block;
   background-color: var(--accent);
-  color: var(--bg-main);
+  color: #ffffff;
   font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
   font-weight: 700;
@@ -406,38 +426,66 @@ button#save:disabled {
   box-shadow: 4px 4px 0px 0px var(--ui-border);
 }
 
-.setting-group:first-child {
-  margin-top: 0;
+.version-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 800;
+  background-color: var(--accent);
+  color: #ffffff;
+  padding: 4px 10px;
+  border: 2px solid var(--ui-border);
 }
 
+/* --- Settings --- */
+
 .setting-group {
-  margin-top: 40px;
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .setting-group-title {
-  font-size: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text-main);
-  border-bottom: 2px solid var(--ui-border);
-  padding-bottom: 8px;
-  margin-bottom: 0;
+  margin: 0 0 12px 0;
   text-transform: uppercase;
   letter-spacing: 1px;
+  opacity: 0.9;
 }
 
-.setting-item {
+.setting-card {
+  background-color: var(--bg-surface);
+  border: 3px solid var(--ui-border);
+  box-shadow: 6px 6px 0 var(--ui-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-card .setting-item {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 0;
-  border-bottom: 2px solid var(--grid-color);
+  padding: 24px;
   gap: 24px;
+  transition: background-color 0.15s ease;
 }
 
-.setting-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.setting-card .setting-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background-color: var(--ui-border);
+}
+
+.settings-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 .setting-info {
@@ -455,7 +503,7 @@ button#save:disabled {
 }
 
 .setting-desc {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-main);
   opacity: 0.65;
@@ -468,37 +516,60 @@ button#save:disabled {
   width: 160px;
 }
 
+.setting-control .brutal-select {
+  width: 100%;
+}
+
 .brutal-select {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-
   padding: 8px 32px 8px 12px;
-
   border: 2px solid var(--ui-border);
   background-color: var(--bg-surface);
   color: var(--text-main);
   outline: none;
-  box-shadow: 2px 2px 0px 0px var(--ui-border);
+  box-shadow: 2px 2px 0 var(--ui-border);
   transition: all 0.2s;
   cursor: pointer;
   min-width: 140px;
   width: 100%;
-
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
-  background-image: url("data:image/svg+xml;utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'> <polyline points='6 9 12 15 18 9'/></svg>");
-
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 18px;
+}
+
+:root.dark .brutal-select,
+.limitra-overlay.dark .brutal-select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fafafa' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
 }
 
 .brutal-select:active {
   transform: translate(2px, 2px);
   box-shadow: none;
 }
+
+/* --- Tabs --- */
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.tab-placeholder {
+  text-align: center;
+}
+
+/* --- Footer --- */
 
 .footer-muted-link {
   font-family: 'JetBrains Mono', monospace;
@@ -507,12 +578,10 @@ button#save:disabled {
   opacity: 0.4;
   color: var(--text-main);
   text-decoration: none;
-
-  justify-content: center;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-
   transition: all 0.2s ease;
 }
 
@@ -547,7 +616,107 @@ button#save:disabled {
   fill: none;
 }
 
+/* --- About Section --- */
+
+.about-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-header-content {
+  text-align: center;
+}
+
+.about-title {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.about-description {
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  border-top: 2px dashed var(--grid-color);
+  padding-top: 32px;
+}
+
+.about-socials {
+  display: flex;
+  gap: 12px;
+}
+
+.about-footer-text {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.4;
+  margin-top: 40px;
+}
+
+.about-social-btn {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--ui-border);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px 0px var(--ui-border);
+  transition: all 0.1s ease-in-out;
+  padding: 0;
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+}
+
+.about-social-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.about-social-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Buttons --- */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--accent);
+  color: #fff;
+  padding: 12px 24px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  border: 2px solid var(--ui-border);
+  box-shadow: 4px 4px 0 var(--ui-border);
+  transition: all 0.1s ease-in-out;
+}
+
+.btn-primary:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
 /* --- Overlay & Global Injections --- */
+
 .limitra-overlay {
   position: fixed;
   top: 0;

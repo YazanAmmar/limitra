@@ -28,22 +28,9 @@
               </svg>
             </div>
           </div>
-          <div style="display: flex; flex-direction: column">
+          <div class="header-text">
             <h3 id="app-title">Limitra</h3>
-            <span
-              id="site-badge"
-              style="
-                font-family: 'JetBrains Mono', monospace;
-                font-size: 10px;
-                font-weight: 700;
-                padding: 2px 6px;
-                border: 1px solid var(--ui-border);
-                margin-top: 2px;
-                background-color: var(--bg-surface);
-                color: var(--text-main);
-              "
-              >Checking...</span
-            >
+            <span id="site-badge" class="site-badge">Checking...</span>
           </div>
         </div>
 
@@ -156,13 +143,13 @@
 
       <!-- Usage -->
       <div class="usage-section" id="usage-section">
-        <div id="track-container-videos" style="margin-bottom: 12px">
+        <div id="track-container-videos" class="usage-block">
           <div class="usage-header">
             <span id="lbl-usage-videos">Videos</span>
             <span id="stats-videos" class="usage-stats-text">0 / 0</span>
           </div>
           <div class="progress-track">
-            <div id="fill-videos" class="progress-fill" style="width: 0%"></div>
+            <div id="fill-videos" class="progress-fill"></div>
           </div>
         </div>
 
@@ -172,7 +159,7 @@
             <span id="stats-time" class="usage-stats-text">0 / 0</span>
           </div>
           <div class="progress-track">
-            <div id="fill-time" class="progress-fill" style="width: 0%"></div>
+            <div id="fill-time" class="progress-fill"></div>
           </div>
         </div>
       </div>

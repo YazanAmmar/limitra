@@ -57,161 +57,120 @@
 
       <div class="main-content">
         <!-- General Settings -->
-        <div class="dashboard-card" id="card-general">
-          <div class="setting-group">
-            <h4 class="setting-group-title" id="group-customization">App Customization</h4>
+        <div class="tab-content" id="content-general">
+          <div class="settings-wrapper">
+            <div class="setting-group">
+              <h4 class="setting-group-title" id="group-customization">App Customization</h4>
 
-            <div class="setting-item">
-              <div class="setting-info">
-                <h5 class="setting-title" id="lbl-dash-language">Language</h5>
-                <p class="setting-desc" id="desc-dash-language">
-                  Choose your preferred interface language. Changes apply immediately.
-                </p>
-              </div>
-              <div class="setting-control">
-                <select id="dash-language" class="brutal-select">
-                  <option value="en">English</option>
-                  <option value="ar">العربية</option>
-                </select>
+              <div class="setting-card">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h5 class="setting-title" id="lbl-dash-language">Language</h5>
+                    <p class="setting-desc" id="desc-dash-language">
+                      Choose your preferred interface language. Changes apply immediately.
+                    </p>
+                  </div>
+                  <div class="setting-control">
+                    <select id="dash-language" class="brutal-select">
+                      <option value="en">English</option>
+                      <option value="ar">العربية</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h5 class="setting-title" id="lbl-dash-theme">Theme</h5>
+                    <p class="setting-desc" id="desc-dash-theme">
+                      Choose your preferred color scheme.
+                    </p>
+                  </div>
+                  <div class="setting-control">
+                    <select id="dash-theme" class="brutal-select">
+                      <option value="auto" id="opt-theme-auto">System Auto</option>
+                      <option value="light" id="opt-theme-light">Light</option>
+                      <option value="dark" id="opt-theme-dark">Dark</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h5 class="setting-title" id="lbl-dash-tone">Quote Tone</h5>
+                    <p class="setting-desc" id="desc-dash-tone">
+                      Select the tone of the quotes shown on the block screen.
+                    </p>
+                  </div>
+                  <div class="setting-control">
+                    <select id="dash-tone" class="brutal-select">
+                      <option value="random" id="opt-dash-random">Random</option>
+                      <option value="gentle" id="opt-dash-gentle">Gentle</option>
+                      <option value="harsh" id="opt-dash-harsh">Harsh</option>
+                      <option value="philosophical" id="opt-dash-phil">Philosophical</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="setting-item">
-              <div class="setting-info">
-                <h5 class="setting-title" id="lbl-dash-theme">Theme</h5>
-                <p class="setting-desc" id="desc-dash-theme">Choose your preferred color scheme.</p>
-              </div>
-              <div class="setting-control">
-                <select id="dash-theme" class="brutal-select">
-                  <option value="auto" id="opt-theme-auto">System Auto</option>
-                  <option value="light" id="opt-theme-light">Light</option>
-                  <option value="dark" id="opt-theme-dark">Dark</option>
-                </select>
-              </div>
-            </div>
+            <div class="setting-group">
+              <h4 class="setting-group-title" id="group-security">Security & Tracking</h4>
 
-            <div class="setting-item">
-              <div class="setting-info">
-                <h5 class="setting-title" id="lbl-dash-tone">Quote Tone</h5>
-                <p class="setting-desc" id="desc-dash-tone">
-                  Select the tone of the quotes shown on the block screen.
-                </p>
-              </div>
-              <div class="setting-control">
-                <select id="dash-tone" class="brutal-select">
-                  <option value="random" id="opt-dash-random">Random</option>
-                  <option value="gentle" id="opt-dash-gentle">Gentle</option>
-                  <option value="harsh" id="opt-dash-harsh">Harsh</option>
-                  <option value="philosophical" id="opt-dash-phil">Philosophical</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="setting-group">
-            <h4 class="setting-group-title" id="group-security">Security &amp; Tracking</h4>
-            <div class="setting-item">
-              <div class="setting-info">
-                <h5 class="setting-title" id="lbl-dash-tracking">Tracking Mode</h5>
-                <p class="setting-desc" id="desc-dash-tracking"></p>
-              </div>
-              <div class="setting-control">
-                <select id="dash-tracking" class="brutal-select">
-                  <option value="strict" id="opt-strict">Strict</option>
-                  <option value="playing_only" id="opt-playing">Playing Only</option>
-                  <option value="smart" id="opt-smart">Smart</option>
-                </select>
+              <div class="setting-card">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <h5 class="setting-title" id="lbl-dash-tracking">Tracking Mode</h5>
+                    <p class="setting-desc" id="desc-dash-tracking">
+                      Determine how Limitra counts your usage.
+                    </p>
+                  </div>
+                  <div class="setting-control">
+                    <select id="dash-tracking" class="brutal-select">
+                      <option value="strict" id="opt-strict">Strict</option>
+                      <option value="playing_only" id="opt-playing">Playing Only</option>
+                      <option value="smart" id="opt-smart">Smart</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Analytics -->
-        <div class="dashboard-card" id="card-analytics" style="display: none; text-align: center">
+        <div class="tab-content dashboard-card tab-placeholder" id="content-analytics">
           <div class="badge-soon" id="badge-analytics-soon">Coming Soon</div>
         </div>
 
         <!-- AI Assistant -->
-        <div class="dashboard-card" id="card-ai" style="display: none; text-align: center">
+        <div class="tab-content dashboard-card tab-placeholder" id="content-ai">
           <div class="badge-soon" id="badge-ai-soon">Coming Soon</div>
         </div>
 
         <!-- About -->
-        <div class="dashboard-card" id="card-about" style="display: none; text-align: center">
-          <div style="display: flex; align-items: center; justify-content: center">
-            <div style="text-align: center">
-              <h2 id="title-about" style="margin: 0; margin-bottom: 10px; font-size: 28px">
-                About Limitra
-              </h2>
+        <div class="tab-content dashboard-card tab-placeholder" id="content-about">
+          <div class="about-header">
+            <div class="about-header-content">
+              <h2 id="title-about" class="about-title">About Limitra</h2>
               <a
                 href="https://github.com/YazanAmmar/limitra/CHANGELOG.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                style="
-                  font-family: 'JetBrains Mono', monospace;
-                  font-size: 13px;
-                  font-weight: 800;
-                  background-color: var(--accent);
-                  color: var(--bg-main);
-                  padding: 4px 10px;
-                  border: 2px solid var(--ui-border);
-                "
-                >v1.0.0</a
+                class="version-badge"
               >
+                v1.0.0
+              </a>
             </div>
           </div>
 
-          <p
-            id="desc-about"
-            style="
-              font-size: 15px;
-              font-weight: 600;
-              opacity: 0.7;
-              margin-bottom: 32px;
-              line-height: 1.6;
-            "
-          >
-            Built to protect your attention.
-          </p>
+          <p id="desc-about" class="about-description">Built to protect your attention.</p>
 
-          <div
-            style="
-              display: flex;
-              flex-wrap: wrap;
-              gap: 16px;
-              align-items: center;
-              justify-content: center;
-              border-top: 2px dashed var(--grid-color);
-              padding-top: 32px;
-            "
-          >
+          <div class="about-actions">
             <a
               href="https://limitra.xyz/#support"
               target="_blank"
               rel="noopener noreferrer"
-              style="
-                display: inline-flex;
-                align-items: center;
-                gap: 10px;
-                background-color: var(--accent);
-                color: #ffffff;
-                padding: 12px 24px;
-                font-family: 'Inter', sans-serif;
-                font-weight: 800;
-                font-size: 15px;
-                text-decoration: none;
-                border: 2px solid var(--ui-border);
-                box-shadow: 4px 4px 0px 0px var(--ui-border);
-                transition: all 0.1s ease-in-out;
-              "
-              onmousedown="
-                this.style.transform = 'translate(4px, 4px)';
-                this.style.boxShadow = 'none';
-              "
-              onmouseup="
-                this.style.transform = 'none';
-                this.style.boxShadow = '4px 4px 0px 0px var(--ui-border)';
-              "
+              class="btn-primary"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -231,7 +190,7 @@
               Sponsor &amp; Support
             </a>
 
-            <div style="display: flex; gap: 12px">
+            <div class="about-socials">
               <a
                 href="https://limitra.xyz"
                 target="_blank"
@@ -307,18 +266,7 @@
             </div>
           </div>
 
-          <p
-            style="
-              text-align: center;
-              font-family: 'JetBrains Mono', monospace;
-              font-size: 12px;
-              font-weight: 700;
-              opacity: 0.4;
-              margin-top: 40px;
-            "
-          >
-            © 2026 Limitra. All rights reserved.
-          </p>
+          <p class="about-footer-text">© 2026 Limitra. All rights reserved.</p>
 
           <div class="footer-links">
             <a

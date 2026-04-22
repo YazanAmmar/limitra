@@ -22,7 +22,7 @@ const ar: LocaleStrings = {
     sidebarAI: 'المساعد الذكي (AI)',
     sidebarAnalytics: 'الإحصائيات',
     comingSoon: 'قريباً',
-    languageLabel: 'اللغة (Language):',
+    languageLabel: 'اللغة',
     trackingMode: 'نمط التتبع',
     modeStrictLabel: 'صارم',
     modePlayingLabel: 'التشغيل فقط',

@@ -70,21 +70,22 @@ function updateUITexts() {
 
 function setupNavigation() {
   const tabs = ['general', 'analytics', 'ai', 'about'];
+
   tabs.forEach((tab) => {
     const btn = document.getElementById(`nav-${tab}`);
     if (btn) {
       btn.onclick = () => {
         tabs.forEach((t) => {
           document.getElementById(`nav-${t}`)?.classList.remove('active');
-          const card = document.getElementById(`card-${t}`);
-          if (card) card.style.display = 'none';
+          document.getElementById(`content-${t}`)?.classList.remove('active');
         });
+
         btn.classList.add('active');
-        const activeCard = document.getElementById(`card-${tab}`);
-        if (activeCard) activeCard.style.display = 'block';
+        document.getElementById(`content-${tab}`)?.classList.add('active');
       };
     }
   });
+
   document.getElementById('nav-general')?.click();
 }
 
