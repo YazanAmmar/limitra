@@ -30,6 +30,30 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: false }],
+
+      'no-restricted-properties': [
+        'error',
+
+        // --- Dangerous HTML injection ---
+        {
+          property: 'innerHTML',
+          message: 'Do not use innerHTML. Use textContent or DOM APIs instead.',
+        },
+        {
+          property: 'outerHTML',
+          message: 'Do not use outerHTML.',
+        },
+        {
+          property: 'insertAdjacentHTML',
+          message: 'Avoid insertAdjacentHTML. Use DOM creation instead.',
+        },
+
+        // --- Inline styles ---
+        {
+          property: 'style',
+          message: 'Do not use inline styles. Use classes instead.',
+        },
+      ],
     },
   },
 

@@ -319,7 +319,7 @@ button#save:disabled {
 .progress-fill {
   height: 100%;
   background-color: var(--accent);
-  width: 0%;
+  width: var(--progress, 0%);
   transition:
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s ease;
@@ -347,6 +347,23 @@ button#save:disabled {
   margin-top: 2px;
   background-color: var(--bg-surface);
   color: var(--text-main);
+}
+
+/* --- Site Badge States --- */
+
+.site-badge.success {
+  color: var(--status-success);
+  border-color: var(--status-success);
+}
+
+.site-badge.warning {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+}
+
+.site-badge.muted {
+  color: var(--text-muted);
+  border-color: var(--text-muted);
 }
 
 /* --- Usage --- */
@@ -558,6 +575,108 @@ button#save:disabled {
 .brutal-select:active {
   transform: translate(2px, 2px);
   box-shadow: none;
+}
+
+/* --- Custom Select (Brutal Dropdown Replacement) --- */
+
+select.brutal-select-hidden {
+  display: none !important;
+}
+
+.custom-brutal-select {
+  position: relative;
+  width: 100%;
+  min-width: 140px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  user-select: none;
+}
+
+.custom-brutal-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 2px solid var(--ui-border);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: 2px 2px 0 var(--ui-border);
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  box-sizing: border-box;
+}
+
+.custom-brutal-trigger:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.custom-brutal-trigger svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-brutal-select.open .custom-brutal-trigger svg {
+  transform: rotate(180deg);
+}
+
+.custom-brutal-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--ui-border);
+  box-shadow: 4px 4px 0 var(--ui-border);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  box-sizing: border-box;
+}
+
+.custom-brutal-select.open .custom-brutal-options {
+  display: flex;
+  animation: brutalSlideDown 0.15s ease-out forwards;
+}
+
+@keyframes brutalSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-brutal-option {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid var(--ui-border);
+  transition: background-color 0.1s;
+  color: var(--text-main);
+}
+
+.custom-brutal-option:last-child {
+  border-bottom: none;
+}
+
+.custom-brutal-option:hover {
+  background-color: var(--grid-color);
+  color: var(--accent);
+}
+
+.custom-brutal-option.selected {
+  background-color: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
 }
 
 /* --- Tabs --- */

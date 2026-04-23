@@ -45,14 +45,14 @@ function updateProgressBar() {
   const usageSection = document.getElementById('usage-section') as HTMLElement;
 
   if (!isLimitEnabled && !isTimeEnabled) {
-    usageSection.style.display = 'none';
+    usageSection.classList.add('hidden');
     return;
   } else {
-    usageSection.style.display = 'block';
+    usageSection.classList.remove('hidden');
   }
 
   if (isLimitEnabled) {
-    containerVideos.style.display = 'block';
+    containerVideos.classList.remove('hidden');
 
     let pCount = limit > 0 ? (currentConsumedCount / limit) * 100 : 0;
     if (pCount > 100) pCount = 100;
@@ -61,14 +61,14 @@ function updateProgressBar() {
       `${currentConsumedCount} / ${limit} ${t.popup.videosUnit}`;
 
     const fillV = document.getElementById('fill-videos') as HTMLElement;
-    fillV.style.width = `${pCount}%`;
-    fillV.style.backgroundColor = pCount >= 100 && limit > 0 ? '#7c3aed' : 'var(--accent)';
+    fillV.setAttribute('style', `--progress: ${pCount}%`);
+    fillV.classList.toggle('is-complete', pCount >= 100 && limit > 0);
   } else {
-    containerVideos.style.display = 'none';
+    containerVideos.classList.add('hidden');
   }
 
   if (isTimeEnabled) {
-    containerTime.style.display = 'block';
+    containerTime.classList.remove('hidden');
 
     let pTime = timeLimit > 0 ? (timeSpentMins / timeLimit) * 100 : 0;
     if (pTime > 100) pTime = 100;
@@ -77,11 +77,16 @@ function updateProgressBar() {
       `${timeSpentMins} / ${timeLimit} ${t.popup.minsUnit}`;
 
     const fillT = document.getElementById('fill-time') as HTMLElement;
-    fillT.style.width = `${pTime}%`;
-    fillT.style.backgroundColor = pTime >= 100 && timeLimit > 0 ? '#7c3aed' : 'var(--accent)';
+    fillT.setAttribute('style', `--progress: ${pTime}%`);
+    fillT.classList.toggle('is-complete', pTime >= 100 && timeLimit > 0);
   } else {
-    containerTime.style.display = 'none';
+    containerTime.classList.add('hidden');
   }
+}
+
+function setBadgeState(el: HTMLElement, state: 'success' | 'warning' | 'muted') {
+  el.classList.remove('success', 'warning', 'muted');
+  el.classList.add(state);
 }
 
 async function init() {
@@ -118,18 +123,15 @@ async function init() {
       chrome.tabs.sendMessage(currentTab.id!, { action: AppAction.PING }, (response) => {
         if (chrome.runtime.lastError || !response || response.status !== 'ALIVE') {
           siteBadge.textContent = '○ Refresh Page';
-          siteBadge.style.color = 'var(--status-warning)';
-          siteBadge.style.borderColor = 'var(--status-warning)';
+          setBadgeState(siteBadge, 'warning');
         } else {
           siteBadge.textContent = '● YouTube Shorts';
-          siteBadge.style.color = 'var(--status-success)';
-          siteBadge.style.borderColor = 'var(--status-success)';
+          setBadgeState(siteBadge, 'success');
         }
       });
     } else {
       siteBadge.textContent = '○ Unsupported Site';
-      siteBadge.style.color = 'var(--text-muted)';
-      siteBadge.style.borderColor = 'var(--text-muted)';
+      setBadgeState(siteBadge, 'muted');
     }
   });
 

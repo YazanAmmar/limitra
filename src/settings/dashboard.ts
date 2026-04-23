@@ -1,6 +1,7 @@
 import { storage } from '../core/storage';
 import { i18n } from '../i18n/index';
 import { LocaleCode } from '../i18n/types';
+import { initCustomSelects } from '../ui/components/custom-select';
 
 function applyTheme(theme: string) {
   const isPageDark =
@@ -181,6 +182,8 @@ async function init() {
       applyTheme('auto');
     }
   });
+
+  initCustomSelects();
 }
 
 void init();
