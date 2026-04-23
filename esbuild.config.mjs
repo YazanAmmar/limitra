@@ -49,7 +49,6 @@ const context = await esbuild.context({
       name: 'copy-assets',
       setup(build) {
         let isWatchingExtra = false;
-
         build.onEnd(() => {
           copyFileToDir('manifest.json', 'dist');
           copyFileToDir('styles.css', 'dist');
@@ -57,29 +56,26 @@ const context = await esbuild.context({
           copyFileToDir('src/settings/dashboard.html', 'dist/settings');
           copyDirRecursive('src/_locales', 'dist/_locales');
           copyDirRecursive('src/assets', 'dist/assets');
-
           console.log('[+] Build finished');
 
           if (!isWatchingExtra && !isProd) {
             isWatchingExtra = true;
+            let debounceTimeout;
 
-            let stylesTimeout;
-            let docsTimeout;
+            const filesToWatch = [
+              { src: 'styles.css', dest: 'dist' },
+              { src: 'src/popup.html', dest: 'dist' },
+              { src: 'src/settings/dashboard.html', dest: 'dist/settings' },
+            ];
 
-            fs.watch('styles.css', () => {
-              clearTimeout(stylesTimeout);
-              stylesTimeout = setTimeout(() => {
-                console.log('[watch] styles.css changed');
-                copyFileToDir('styles.css', 'dist');
-              }, 100);
-            });
-
-            fs.watch('docs', { recursive: true }, () => {
-              clearTimeout(docsTimeout);
-              docsTimeout = setTimeout(() => {
-                console.log('[watch] docs changed');
-                copyDirRecursive('docs', 'dist/docs');
-              }, 100);
+            filesToWatch.forEach(({ src, dest }) => {
+              fs.watch(src, () => {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                  console.log(`[watch] ${path.basename(src)} changed`);
+                  copyFileToDir(src, dest);
+                }, 100);
+              });
             });
           }
         });
