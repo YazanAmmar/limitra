@@ -105,9 +105,7 @@ async function init() {
   toggleTime.checked = isTimeEnabled;
 
   limitInput.disabled = !isLimitEnabled;
-  limitInput.style.opacity = isLimitEnabled ? '1' : '0.5';
   timeInput.disabled = !isTimeEnabled;
-  timeInput.style.opacity = isTimeEnabled ? '1' : '0.5';
 
   updateUITexts();
 
@@ -130,7 +128,8 @@ async function init() {
       });
     } else {
       siteBadge.textContent = '○ Unsupported Site';
-      siteBadge.style.opacity = '0.6';
+      siteBadge.style.color = 'var(--text-muted)';
+      siteBadge.style.borderColor = 'var(--text-muted)';
     }
   });
 
@@ -239,9 +238,7 @@ chrome.storage.onChanged.addListener((changes) => {
 [toggleLimit, toggleTime].forEach((toggle) => {
   toggle.addEventListener('change', () => {
     limitInput.disabled = !toggleLimit.checked;
-    limitInput.style.opacity = toggleLimit.checked ? '1' : '0.5';
     timeInput.disabled = !toggleTime.checked;
-    timeInput.style.opacity = toggleTime.checked ? '1' : '0.5';
     updateProgressBar();
   });
 });
