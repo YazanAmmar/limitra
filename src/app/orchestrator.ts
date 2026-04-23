@@ -2,7 +2,7 @@ import { Tracker } from '../core/tracker';
 import { Limiter } from '../core/limiter';
 import { Messenger } from '../core/messenger';
 import { SessionManager } from '../core/session';
-import { showOverlay } from '../ui/overlay/index';
+import { showOverlay, initOverlayListeners } from '../ui/overlay/controller';
 import { storage } from '../core/storage/index';
 import { PlatformAdapter } from '../types';
 // import { GenericAdapter } from './platforms/generic/index';
@@ -17,6 +17,8 @@ export class AppOrchestrator {
   }
 
   public async start() {
+    initOverlayListeners();
+
     const safeBlock = async (reason: string = 'time') => {
       if (!this.isBlocked) {
         this.isBlocked = true;

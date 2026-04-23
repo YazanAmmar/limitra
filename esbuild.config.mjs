@@ -42,7 +42,12 @@ const common = {
 
 const context = await esbuild.context({
   ...common,
-  entryPoints: ['src/content.ts', 'src/popup.ts', 'src/background.ts', 'src/settings/dashboard.ts'],
+  entryPoints: [
+    'src/content.ts',
+    'src/background.ts',
+    'src/ui/popup/index.ts',
+    'src/ui/settings/index.ts',
+  ],
   outdir: 'dist',
   plugins: [
     {
@@ -52,8 +57,8 @@ const context = await esbuild.context({
         build.onEnd(() => {
           copyFileToDir('manifest.json', 'dist');
           copyFileToDir('styles.css', 'dist');
-          copyFileToDir('src/popup.html', 'dist');
-          copyFileToDir('src/settings/dashboard.html', 'dist/settings');
+          copyFileToDir('src/ui/popup/index.html', 'dist/ui/popup');
+          copyFileToDir('src/ui/settings/index.html', 'dist/ui/settings');
           copyDirRecursive('src/_locales', 'dist/_locales');
           copyDirRecursive('src/assets', 'dist/assets');
           console.log('[+] Build finished');
@@ -64,8 +69,8 @@ const context = await esbuild.context({
 
             const filesToWatch = [
               { src: 'styles.css', dest: 'dist' },
-              { src: 'src/popup.html', dest: 'dist' },
-              { src: 'src/settings/dashboard.html', dest: 'dist/settings' },
+              { src: 'src/ui/popup/index.html', dest: 'dist/ui/popup' },
+              { src: 'src/ui/settings/index.html', dest: 'dist/ui/settings' },
             ];
 
             filesToWatch.forEach(({ src, dest }) => {

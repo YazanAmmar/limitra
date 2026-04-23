@@ -1,6 +1,6 @@
-import { storage } from './core/storage';
-import { i18n } from './i18n/index';
-import { AppAction } from './types';
+import { storage } from '../../core/storage';
+import { i18n } from '../../i18n/index';
+import { AppAction } from '../../types';
 
 const limitInput = document.getElementById('limit') as HTMLInputElement;
 const timeInput = document.getElementById('timeLimit') as HTMLInputElement;
@@ -157,8 +157,8 @@ function applyTheme(theme: string) {
 
 function updateActionIcon(isSystemDark: boolean) {
   const iconPath = isSystemDark
-    ? 'assets/manifest/32x32-dark.png'
-    : 'assets/manifest/32x32-light.png';
+    ? '../../assets/manifest/32x32-dark.png'
+    : '../../assets/manifest/32x32-light.png';
 
   if (chrome.action) {
     void chrome.action

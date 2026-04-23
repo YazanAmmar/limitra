@@ -138,24 +138,34 @@ src/
 │   ├── messenger.ts          # content - background message bus
 │   └── storage/              # Settings, stats, sessions, and security storage
 ├── platforms/
-│   ├── youtube/index.ts      # MutationObserver on URL, 1.5s watch threshold
+│   ├── youtube/index.ts      # YouTube adapter (Videos detection + tracking)
+│   └── generic/index.ts      # Fallback adapter
 ├── ui/
-│   └── overlay/
-│       ├── index.ts          # Reads storage + i18n, builds overlay data
-│       └── renderer.ts       # Pure DOM builder, countdown timer
+│   ├── popup/
+│   │   ├── index.html        # Extension popup UI
+│   │   └── index.ts          # Popup logic
+│   │
+│   ├── settings/
+│   │   ├── index.html        # Options page (settings UI)
+│   │   └── index.ts          # Settings logic
+│   │
+│   ├── overlay/
+│   │   ├── controller.ts     # Orchestrates overlay (data + events)
+│   │   ├── persistence.ts    # Ensures overlay cannot be removed (observer)
+│   │   └── renderer.ts       # Pure DOM builder + countdown timer
+│   │
+│   └── components/           # Reusable UI components (custom controls)
 ├── i18n/
 │   ├── types.ts              # LocaleStrings interface (type-safe translations)
 │   ├── index.ts              # i18n singleton with locale switching
 │   └── locales/
 │       ├── en.ts
 │       └── ar.ts
-├── settings/
-│   ├── dashboard.html        # Options page
-│   └── dashboard.ts          # Dashboard logic
-├── background.ts             # Alarm-based time limit checker (read-only for time)
+├── _locales/                 # Chrome extension translations (manifest-level)
+├── assets/                   # Icons and static assets
+├── background.ts             # Alarm-based time limit checker (background worker)
 ├── content.ts                # Entry point, adapter selection
-├── popup.ts                  # Popup UI logic
-└── types.ts                  # PlatformAdapter, AppAction, ExtensionMessage
+└── types.ts                  # Shared types (AppAction, messages, adapters)
 ```
 
 ## Getting Started
