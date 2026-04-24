@@ -16,3 +16,5 @@ dist/
 *.bak
 
 main.js
+
+docs/tailwind.css
