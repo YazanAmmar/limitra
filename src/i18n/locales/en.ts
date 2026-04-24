@@ -15,6 +15,10 @@ const en: LocaleStrings = {
     reason_count: 'Triggered by: Video Counter',
     reason_time: 'Triggered by: Time Limit',
     reason_bypass: 'Triggered by: Anti-Bypass System',
+    checking: 'Checking...',
+    refreshPage: '○ Refresh Page',
+    youtubeShorts: '● YouTube Shorts',
+    unsupportedSite: '○ Unsupported Site',
   },
   dashboard: {
     title: 'Limitra Command Center',
@@ -44,6 +48,10 @@ const en: LocaleStrings = {
     sidebarAbout: 'About',
     aboutTitle: 'About Limitra',
     aboutDesc: 'Built to protect your attention.',
+    btnSponsor: 'Sponsor & Support',
+    descTracking: 'Determine how Limitra counts your usage.',
+    footerCopyright: '© 2026 Limitra. All rights reserved.',
+    footerPrivacy: 'Privacy Policy · Terms',
   },
   tones: {
     random: 'Random',

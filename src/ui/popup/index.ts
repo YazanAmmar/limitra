@@ -17,19 +17,29 @@ let currentConsumedTimeMs = 0;
 let clickCount = 0;
 let spamResetTimer: number | null = null;
 
+function setText(id: string, value: string) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
 function updateUITexts() {
   const t = i18n.t;
-  (document.getElementById('app-title') as HTMLElement).textContent = t.popup.title;
-  (document.getElementById('lbl-max-videos') as HTMLElement).textContent = t.popup.maxVideos;
-  (document.getElementById('lbl-time-limit') as HTMLElement).textContent = t.popup.timeLimit;
 
-  const lblUsageVideos = document.getElementById('lbl-usage-videos');
-  if (lblUsageVideos) lblUsageVideos.textContent = t.popup.videosUnit;
-  const lblUsageTime = document.getElementById('lbl-usage-time');
-  if (lblUsageTime) lblUsageTime.textContent = t.popup.timeTitle;
+  const map: Record<string, string> = {
+    'app-title': t.popup.title,
+    'lbl-max-videos': t.popup.maxVideos,
+    'lbl-time-limit': t.popup.timeLimit,
+    'lbl-usage-videos': t.popup.videosUnit,
+    'lbl-usage-time': t.popup.timeTitle,
+    'site-badge': t.popup.checking,
+  };
+
+  Object.entries(map).forEach(([id, value]) => setText(id, value));
 
   btnSave.textContent = t.popup.saveBtn;
+
   document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+
   updateProgressBar();
 }
 
@@ -40,6 +50,7 @@ function updateProgressBar() {
   const timeLimit = Number(timeInput.value) || 0;
   const timeSpentMins = Math.floor(currentConsumedTimeMs / (60 * 1000));
   const t = i18n.t;
+
   const containerVideos = document.getElementById('track-container-videos') as HTMLElement;
   const containerTime = document.getElementById('track-container-time') as HTMLElement;
   const usageSection = document.getElementById('usage-section') as HTMLElement;
@@ -57,8 +68,7 @@ function updateProgressBar() {
     let pCount = limit > 0 ? (currentConsumedCount / limit) * 100 : 0;
     if (pCount > 100) pCount = 100;
 
-    (document.getElementById('stats-videos') as HTMLElement).textContent =
-      `${currentConsumedCount} / ${limit} ${t.popup.videosUnit}`;
+    setText('stats-videos', `${currentConsumedCount} / ${limit} ${t.popup.videosUnit}`);
 
     const fillV = document.getElementById('fill-videos') as HTMLElement;
     fillV.setAttribute('style', `--progress: ${pCount}%`);
@@ -73,8 +83,7 @@ function updateProgressBar() {
     let pTime = timeLimit > 0 ? (timeSpentMins / timeLimit) * 100 : 0;
     if (pTime > 100) pTime = 100;
 
-    (document.getElementById('stats-time') as HTMLElement).textContent =
-      `${timeSpentMins} / ${timeLimit} ${t.popup.minsUnit}`;
+    setText('stats-time', `${timeSpentMins} / ${timeLimit} ${t.popup.minsUnit}`);
 
     const fillT = document.getElementById('fill-time') as HTMLElement;
     fillT.setAttribute('style', `--progress: ${pTime}%`);
@@ -118,19 +127,20 @@ async function init() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     const currentUrl = currentTab?.url || '';
+    const t = i18n.t;
 
     if (currentUrl.includes('youtube.com') && currentUrl.includes('/shorts/')) {
       chrome.tabs.sendMessage(currentTab.id!, { action: AppAction.PING }, (response) => {
         if (chrome.runtime.lastError || !response || response.status !== 'ALIVE') {
-          siteBadge.textContent = '○ Refresh Page';
+          siteBadge.textContent = t.popup.refreshPage;
           setBadgeState(siteBadge, 'warning');
         } else {
-          siteBadge.textContent = '● YouTube Shorts';
+          siteBadge.textContent = t.popup.youtubeShorts;
           setBadgeState(siteBadge, 'success');
         }
       });
     } else {
-      siteBadge.textContent = '○ Unsupported Site';
+      siteBadge.textContent = t.popup.unsupportedSite;
       setBadgeState(siteBadge, 'muted');
     }
   });
@@ -161,9 +171,7 @@ function updateActionIcon(isSystemDark: boolean) {
     : '../../assets/manifest/32x32-light.png';
 
   if (chrome.action) {
-    void chrome.action
-      .setIcon({ path: iconPath })
-      .catch((err) => console.error('[Limitra] Background Icon Error:', err));
+    void chrome.action.setIcon({ path: iconPath }).catch(console.error);
   }
 }
 
@@ -176,19 +184,20 @@ systemThemeQuery.addEventListener('change', (event) => {
 
 btnSave.onclick = async () => {
   clickCount++;
+
   if (spamResetTimer) clearTimeout(spamResetTimer);
-  spamResetTimer = window.setTimeout(() => {
-    clickCount = 0;
-  }, 2000);
+  spamResetTimer = window.setTimeout(() => (clickCount = 0), 2000);
 
   if (clickCount >= 10) {
     btnSave.textContent = i18n.t.popup.stopSpamming;
     btnSave.disabled = true;
+
     setTimeout(() => {
       btnSave.textContent = i18n.t.popup.saveBtn;
       btnSave.disabled = false;
       clickCount = 0;
     }, 3000);
+
     return;
   }
 
@@ -203,6 +212,7 @@ btnSave.onclick = async () => {
   updateProgressBar();
 
   btnSave.textContent = i18n.t.popup.savedMsg;
+
   setTimeout(() => {
     if (!btnSave.disabled) btnSave.textContent = i18n.t.popup.saveBtn;
   }, 1500);
@@ -215,25 +225,35 @@ btnSettings.onclick = () => {
 themeToggleBtn.onclick = async () => {
   const current = await storage.getTheme();
   const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
   const next =
     current === 'auto' ? (isSystemDark ? 'light' : 'dark') : current === 'dark' ? 'light' : 'dark';
+
   await storage.setTheme(next);
   applyTheme(next);
 };
 
 chrome.storage.onChanged.addListener((changes) => {
   let needsUpdate = false;
+
   if (changes['limitra_count']) {
     currentConsumedCount = Number(changes['limitra_count'].newValue) || 0;
     needsUpdate = true;
   }
+
   if (changes['limitra_time_spent']) {
     currentConsumedTimeMs = Number(changes['limitra_time_spent'].newValue) || 0;
     needsUpdate = true;
   }
+
   if (changes['limitra_theme']) {
     applyTheme(changes['limitra_theme'].newValue as string);
   }
+
+  if (changes['limitra_language']) {
+    updateUITexts();
+  }
+
   if (needsUpdate) updateProgressBar();
 });
 

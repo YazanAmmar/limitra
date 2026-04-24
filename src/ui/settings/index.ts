@@ -14,57 +14,63 @@ function applyTheme(theme: string) {
 
 function updateUITexts() {
   const t = i18n.t;
-  (document.getElementById('dash-title') as HTMLElement).textContent = t.dashboard.title;
-  (document.getElementById('nav-general') as HTMLElement).textContent = t.dashboard.sidebarGeneral;
-  (document.getElementById('nav-analytics') as HTMLElement).textContent =
-    t.dashboard.sidebarAnalytics;
-  (document.getElementById('nav-ai') as HTMLElement).textContent = t.dashboard.sidebarAI;
-  (document.getElementById('nav-about') as HTMLElement).textContent = t.dashboard.sidebarAbout;
 
-  (document.getElementById('title-about') as HTMLElement).textContent = t.dashboard.aboutTitle;
-  (document.getElementById('desc-about') as HTMLElement).textContent = t.dashboard.aboutDesc;
+  const map: Record<string, string> = {
+    // Navigation
+    'dash-title': t.dashboard.title,
+    'nav-general': t.dashboard.sidebarGeneral,
+    'nav-analytics': t.dashboard.sidebarAnalytics,
+    'nav-ai': t.dashboard.sidebarAI,
+    'nav-about': t.dashboard.sidebarAbout,
+    'badge-analytics-soon': t.dashboard.comingSoon,
+    'badge-ai-soon': t.dashboard.comingSoon,
 
-  (document.getElementById('lbl-dash-language') as HTMLElement).textContent =
-    t.dashboard.languageLabel;
-  (document.getElementById('lbl-dash-tracking') as HTMLElement).textContent =
-    t.dashboard.trackingMode;
+    // About
+    'title-about': t.dashboard.aboutTitle,
+    'desc-about': t.dashboard.aboutDesc,
 
-  (document.getElementById('opt-strict') as HTMLOptionElement).textContent =
-    t.dashboard.modeStrictLabel;
+    // Language
+    'lbl-dash-language': t.dashboard.languageLabel,
+    'desc-dash-language': t.dashboard.descLanguage,
 
-  (document.getElementById('opt-playing') as HTMLOptionElement).textContent =
-    t.dashboard.modePlayingLabel;
+    // Theme
+    'lbl-dash-theme': t.dashboard.themeLabel,
+    'desc-dash-theme': t.dashboard.descTheme,
+    'opt-theme-auto': t.dashboard.themeAuto,
+    'opt-theme-light': t.dashboard.themeLight,
+    'opt-theme-dark': t.dashboard.themeDark,
 
-  (document.getElementById('opt-smart') as HTMLOptionElement).textContent =
-    t.dashboard.modeSmartLabel;
+    // Tone
+    'lbl-dash-tone': t.dashboard.toneLabel,
+    'desc-dash-tone': t.dashboard.descTone,
+    'opt-dash-random': t.tones.random,
+    'opt-dash-gentle': t.tones.gentle,
+    'opt-dash-harsh': t.tones.harsh,
+    'opt-dash-phil': t.tones.philosophical,
 
-  (document.getElementById('badge-analytics-soon') as HTMLElement).textContent =
-    t.dashboard.comingSoon;
-  (document.getElementById('badge-ai-soon') as HTMLElement).textContent = t.dashboard.comingSoon;
+    // Tracking
+    'lbl-dash-tracking': t.dashboard.trackingMode,
+    'desc-dash-tracking': t.dashboard.descTracking,
+    'opt-strict': t.dashboard.modeStrictLabel,
+    'opt-playing': t.dashboard.modePlayingLabel,
+    'opt-smart': t.dashboard.modeSmartLabel,
 
-  (document.getElementById('group-customization') as HTMLElement).textContent =
-    t.dashboard.groupCustomization;
-  (document.getElementById('desc-dash-language') as HTMLElement).textContent =
-    t.dashboard.descLanguage;
-  (document.getElementById('group-security') as HTMLElement).textContent =
-    t.dashboard.groupSecurity;
+    // Groups
+    'group-customization': t.dashboard.groupCustomization,
+    'group-security': t.dashboard.groupSecurity,
 
-  (document.getElementById('lbl-dash-theme') as HTMLElement).textContent = t.dashboard.themeLabel;
-  (document.getElementById('desc-dash-theme') as HTMLElement).textContent = t.dashboard.descTheme;
-  (document.getElementById('opt-theme-auto') as HTMLOptionElement).textContent =
-    t.dashboard.themeAuto;
-  (document.getElementById('opt-theme-light') as HTMLOptionElement).textContent =
-    t.dashboard.themeLight;
-  (document.getElementById('opt-theme-dark') as HTMLOptionElement).textContent =
-    t.dashboard.themeDark;
+    // CTA
+    'btn-sponsor-text': t.dashboard.btnSponsor,
 
-  (document.getElementById('lbl-dash-tone') as HTMLElement).textContent = t.dashboard.toneLabel;
-  (document.getElementById('desc-dash-tone') as HTMLElement).textContent = t.dashboard.descTone;
-  (document.getElementById('opt-dash-random') as HTMLOptionElement).textContent = t.tones.random;
-  (document.getElementById('opt-dash-gentle') as HTMLOptionElement).textContent = t.tones.gentle;
-  (document.getElementById('opt-dash-harsh') as HTMLOptionElement).textContent = t.tones.harsh;
-  (document.getElementById('opt-dash-phil') as HTMLOptionElement).textContent =
-    t.tones.philosophical;
+    // Footer
+    'footer-copyright': t.dashboard.footerCopyright,
+    'footer-privacy': t.dashboard.footerPrivacy,
+  };
+
+  Object.entries(map).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  });
 
   document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
 }
@@ -165,6 +171,14 @@ async function init() {
         const newLang = String(changes['limitra_language'].newValue) as LocaleCode;
         void i18n.setLocale(newLang).then(() => {
           updateUITexts();
+
+          document.querySelectorAll('.custom-brutal-select').forEach((el) => el.remove());
+          document.querySelectorAll('select').forEach((el) => {
+            el.classList.remove('brutal-select-hidden');
+          });
+
+          initCustomSelects();
+
           dashLangInput.value = i18n.language;
 
           const currentTracking = dashTrackingInput.value;

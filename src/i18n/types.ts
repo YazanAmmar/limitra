@@ -15,6 +15,10 @@ export interface LocaleStrings {
     reason_count: string;
     reason_time: string;
     reason_bypass: string;
+    checking: string;
+    refreshPage: string;
+    youtubeShorts: string;
+    unsupportedSite: string;
   };
   dashboard: {
     title: string;
@@ -43,6 +47,10 @@ export interface LocaleStrings {
     sidebarAbout: string;
     aboutTitle: string;
     aboutDesc: string;
+    btnSponsor: string;
+    descTracking: string;
+    footerCopyright: string;
+    footerPrivacy: string;
   };
   tones: {
     random: string;
