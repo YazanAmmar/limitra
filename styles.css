@@ -8,6 +8,7 @@
   --text-muted: #737373;
   --ui-border: #000000;
   --accent: #7c3aed;
+  --text-on-accent: #ffffff;
   --grid-color: rgba(0, 0, 0, 0.04);
   --status-success: #10b981;
   --status-warning: #f59e0b;
@@ -71,7 +72,7 @@ h3 {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #7c3aed;
+  background: var(--accent);
   border-radius: 0;
 }
 
@@ -189,7 +190,7 @@ section {
 
 .brutal-toggle input:checked + .toggle-slider:before {
   transform: translateX(16px);
-  background-color: #ffffff;
+  background-color: var(--text-on-accent);
 }
 
 /* --- Popup Specific --- */
@@ -268,7 +269,7 @@ button#save {
   font-weight: 800;
   font-size: 15px;
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-accent);
   border: 2px solid var(--ui-border);
   cursor: pointer;
   box-shadow: 4px 4px 0px 0px var(--ui-border);
@@ -282,7 +283,7 @@ button#save:active {
 
 button#save:disabled {
   background-color: var(--accent);
-  color: var(--bg-main);
+  color: var(--text-on-accent);
 }
 
 .usage-section {
@@ -430,7 +431,7 @@ button#save:disabled {
 
 .nav-item.active {
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-accent);
 }
 
 .dashboard-card {
@@ -443,7 +444,7 @@ button#save:disabled {
 .badge-soon {
   display: inline-block;
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-accent);
   font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
   font-weight: 700;
@@ -458,7 +459,7 @@ button#save:disabled {
   font-size: 13px;
   font-weight: 800;
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-accent);
   padding: 4px 10px;
   border: 2px solid var(--ui-border);
 }
@@ -675,7 +676,7 @@ select.brutal-select-hidden {
 
 .custom-brutal-option.selected {
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-accent);
   font-weight: 700;
 }
 
@@ -825,7 +826,7 @@ select.brutal-select-hidden {
   align-items: center;
   gap: 10px;
   background-color: var(--accent);
-  color: #fff;
+  color: var(--text-on-accent);
   padding: 12px 24px;
   font-family: 'Inter', sans-serif;
   font-weight: 800;
@@ -889,7 +890,7 @@ select.brutal-select-hidden {
   top: -20px;
   left: -20px;
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-accent);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 800;
   font-size: 16px;
@@ -957,7 +958,7 @@ select.brutal-select-hidden {
   left: 50%;
   transform: translateX(-50%) translateY(0);
   background-color: var(--accent);
-  color: var(--bg-main);
+  color: var(--text-on-accent);
   padding: 8px 16px;
   font-family: 'JetBrains Mono', monospace;
   font-weight: 800;
