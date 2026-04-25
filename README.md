@@ -79,6 +79,14 @@ Limitra immediately blocks access when limits are reached - no reminders, no byp
 <img width="720" alt="Blocking Overlay" src="assets/screenshots/overlay.png" />
 </p>
 
+### Settings / Command Center
+
+Configure your limits, tracking mode, theme, and behavior from a dedicated control panel.
+
+<p align="center">
+<img width="720" alt="Settings Dashboard" src="assets/screenshots/settings.png" />
+</p>
+
 ## Why Limitra?
 
 - **Hard limits that actually stop you**: playback is paused, muted, and blocked the moment you hit your limit.
