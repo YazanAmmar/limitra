@@ -233,9 +233,11 @@ For full release notes, see [CHANGELOG.md](./CHANGELOG.md).
 
 ## Contributing
 
-If you want to support Limitra, follow updates, or help shape the project direction, start here:
+Want to contribute to Limitra?
 
-- <https://limitra.xyz/#support>
+Please read the contribution guidelines before opening a pull request: [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+If you find Limitra useful and want to support its development: [Support & Sponsor](https://limitra.xyz/#support)
 
 ## License
 
