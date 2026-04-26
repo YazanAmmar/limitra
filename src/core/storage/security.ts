@@ -1,8 +1,7 @@
 import { StorageDriver } from './driver';
 import { StatsStorage } from './stats';
+import { PlatformId } from '../../types';
 
-const LAST_COUNT_KEY = 'limitra_last_count';
-const LAST_UPDATE_KEY = 'limitra_last_update';
 const WIPE_FLAG_KEY = 'limitra_wipe_count';
 
 /**
@@ -36,14 +35,14 @@ export class SecurityStorage {
   /**
    * Core bypass detection (portable)
    */
-  async detectBypass(): Promise<boolean> {
-    const current = await this.stats.getCount();
-    const last = await this.driver.get<number>(LAST_COUNT_KEY);
-    const lastUpdate = await this.driver.get<number>(LAST_UPDATE_KEY);
+  async detectBypass(platform: PlatformId): Promise<boolean> {
+    const current = await this.stats.getCount(platform);
+    const last = await this.driver.get<number>(`limitra_${platform}_last_count`);
+    const lastUpdate = await this.driver.get<number>(`limitra_${platform}_last_update`);
     const now = Date.now();
 
-    await this.driver.set(LAST_COUNT_KEY, current);
-    await this.driver.set(LAST_UPDATE_KEY, now);
+    await this.driver.set(`limitra_${platform}_last_count`, current);
+    await this.driver.set(`limitra_${platform}_last_update`, now);
 
     if (last === null) return false;
 
@@ -60,9 +59,9 @@ export class SecurityStorage {
     return (await this.driver.get<number>(WIPE_FLAG_KEY)) ?? 0;
   }
 
-  async syncCounters(): Promise<void> {
-    const current = await this.stats.getCount();
-    await this.driver.set(LAST_COUNT_KEY, current);
-    await this.driver.set(LAST_UPDATE_KEY, Date.now());
+  async syncCounters(platform: PlatformId): Promise<void> {
+    const current = await this.stats.getCount(platform);
+    await this.driver.set(`limitra_${platform}_last_count`, current);
+    await this.driver.set(`limitra_${platform}_last_update`, Date.now());
   }
 }

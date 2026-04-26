@@ -1,6 +1,8 @@
-import { PlatformAdapter, ItemChangeCallback } from '../../types';
+import { PlatformAdapter, ItemChangeCallback, PlatformId } from '../../types';
+import { storage } from '../../core/storage/index';
 
 export class YouTubeAdapter implements PlatformAdapter {
+  public readonly id: PlatformId = 'youtube_shorts';
   public name = 'YouTube Shorts';
 
   private lastVideoId: string | null = null;
@@ -11,23 +13,95 @@ export class YouTubeAdapter implements PlatformAdapter {
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
   private pendingVideoId: string | null = null;
-
   private readonly WATCH_THRESHOLD = 1500;
 
   private urlCheckInterval: number | null = null;
   private popstateHandler: (() => void) | null = null;
 
+  private watchTimer: number | null = null;
+  private isWatching: boolean = false;
+  private visibilityHandler: (() => void) | null = null;
+
+  private countedVideos = new Set<string>();
+  private storageListener:
+    | ((changes: { [key: string]: chrome.storage.StorageChange }) => void)
+    | null = null;
+
   public isCurrentPlatform(url: string): boolean {
     return url.includes('youtube.com') && url.includes('/shorts/');
   }
 
+  private startOrResumeWatchTimer(id: string) {
+    if (this.isWatching) return;
+
+    if (this.countedVideos.has(id)) return;
+
+    this.isWatching = true;
+    this.watchTimer = window.setTimeout(() => {
+      const currentId = this.getVideoId(window.location.href);
+
+      if (!document.hidden && currentId === id) {
+        if (!this.countedVideos.has(id)) {
+          this.countedVideos.add(id);
+          if (this.callback) this.callback(id);
+        }
+      }
+
+      this.isWatching = false;
+      this.watchTimer = null;
+    }, this.WATCH_THRESHOLD);
+  }
+
+  private pauseWatchTimer() {
+    if (this.watchTimer) {
+      window.clearTimeout(this.watchTimer);
+      this.watchTimer = null;
+    }
+    this.isWatching = false;
+  }
+
+  private handleVideoChange(id: string) {
+    this.pendingVideoId = id;
+    this.pauseWatchTimer();
+
+    if (!document.hidden) {
+      this.startOrResumeWatchTimer(id);
+    }
+  }
+
   public observe(onItemChange: ItemChangeCallback): void {
     this.callback = onItemChange;
-    this.lastVideoId = this.getVideoId(window.location.href);
+    this.lastVideoId = null;
+
+    this.visibilityHandler = () => {
+      if (document.hidden) {
+        this.pauseWatchTimer();
+      } else {
+        if (this.pendingVideoId && this.pendingVideoId === this.getVideoId(window.location.href)) {
+          this.startOrResumeWatchTimer(this.pendingVideoId);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+
+    this.storageListener = (changes) => {
+      if (changes[`limitra_${this.id}_count`] || changes[`limitra_${this.id}_time_spent`]) {
+        void storage.isCurrentlyBlocked(this.id).then((isBlocked) => {
+          if (isBlocked) {
+            this.executePunishment();
+          }
+        });
+      }
+    };
+    chrome.storage.onChanged.addListener(this.storageListener);
+
     this.observeUrlChanges();
   }
 
   public disconnect(): void {
+    this.pauseWatchTimer();
+    this.countedVideos.clear();
+
     if (this.urlCheckInterval !== null) {
       window.clearInterval(this.urlCheckInterval);
       this.urlCheckInterval = null;
@@ -36,6 +110,16 @@ export class YouTubeAdapter implements PlatformAdapter {
     if (this.popstateHandler) {
       window.removeEventListener('popstate', this.popstateHandler);
       this.popstateHandler = null;
+    }
+
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+
+    if (this.storageListener) {
+      chrome.storage.onChanged.removeListener(this.storageListener);
+      this.storageListener = null;
     }
 
     if (this.observer) {
@@ -95,7 +179,7 @@ export class YouTubeAdapter implements PlatformAdapter {
     });
 
     this.keydownHandler = (e: KeyboardEvent) => {
-      const blockedKeys = [' ', 'k', 'ArrowUp', 'ArrowDown']; // play/pause shortcuts
+      const blockedKeys = [' ', 'k', 'ArrowUp', 'ArrowDown'];
       if (blockedKeys.includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -110,21 +194,17 @@ export class YouTubeAdapter implements PlatformAdapter {
     return match ? match[1] : null;
   }
 
-  private async handleVideoChange(id: string) {
-    if (!this.callback) return;
-    this.pendingVideoId = id;
-    await new Promise((r) => setTimeout(r, this.WATCH_THRESHOLD));
-    if (this.pendingVideoId === id && this.getVideoId(window.location.href) === id) {
-      this.callback(id);
-    }
-  }
-
   private checkUrl() {
     const currentId = this.getVideoId(window.location.href);
-    if (!currentId) return;
+
     if (currentId !== this.lastVideoId) {
       this.lastVideoId = currentId;
-      void this.handleVideoChange(currentId);
+      if (currentId) {
+        void this.handleVideoChange(currentId);
+      } else {
+        this.pauseWatchTimer();
+        this.pendingVideoId = null;
+      }
     }
   }
 
@@ -143,6 +223,12 @@ export class YouTubeAdapter implements PlatformAdapter {
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href;
         this.checkUrl();
+      }
+
+      if (!document.hidden && !this.isWatching && this.pendingVideoId) {
+        if (this.getVideoId(window.location.href) === this.pendingVideoId) {
+          this.startOrResumeWatchTimer(this.pendingVideoId);
+        }
       }
     }, 500);
 

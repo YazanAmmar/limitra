@@ -6,14 +6,9 @@ export class Messenger {
   private messageListener = (
     message: unknown,
     _sender: chrome.runtime.MessageSender,
-    sendResponse: (response?: unknown) => void,
+    _sendResponse: (response?: unknown) => void,
   ) => {
     const extMessage = message as ExtensionMessage;
-
-    if (extMessage && extMessage.action === AppAction.PING) {
-      sendResponse({ status: 'ALIVE' });
-      return;
-    }
 
     if (extMessage && extMessage.action === AppAction.BLOCK_NOW) {
       console.warn('[Messenger] Received BLOCK_NOW from background');

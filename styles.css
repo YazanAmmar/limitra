@@ -10,8 +10,6 @@
   --accent: #7c3aed;
   --text-on-accent: #ffffff;
   --grid-color: rgba(0, 0, 0, 0.04);
-  --status-success: #10b981;
-  --status-warning: #f59e0b;
 }
 
 /* --- Dark Mode Palette --- */
@@ -339,32 +337,66 @@ button#save:disabled {
   flex-direction: column;
 }
 
-.site-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border: 1px solid var(--ui-border);
-  margin-top: 2px;
+.header-text .custom-brutal-select {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+.header-text .custom-brutal-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 20px;
+  min-height: 20px;
+  max-height: 20px;
+  padding: 0 8px;
+  border-width: 1.5px !important;
+  box-shadow: 2px 2px 0px 0px;
   background-color: var(--bg-surface);
-  color: var(--text-main);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    border-color 0.2s ease;
 }
 
-/* --- Site Badge States --- */
-
-.site-badge.success {
-  color: var(--status-success);
-  border-color: var(--status-success);
+.header-text .custom-select-value {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  padding-right: 6px;
 }
 
-.site-badge.warning {
-  color: var(--status-warning);
-  border-color: var(--status-warning);
+.header-text .custom-brutal-trigger svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
-.site-badge.muted {
-  color: var(--text-muted);
-  border-color: var(--text-muted);
+.header-text .custom-brutal-trigger:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px 0px;
+}
+
+.header-text .custom-brutal-options {
+  border-width: 1.5px;
+}
+
+.header-text .custom-brutal-option {
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+.header-text .setting-control {
+  width: fit-content;
+  min-width: unset;
+}
+
+.custom-brutal-option[data-value=''] {
+  display: none !important;
 }
 
 /* --- Usage --- */

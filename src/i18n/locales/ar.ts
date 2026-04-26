@@ -15,10 +15,8 @@ const ar: LocaleStrings = {
     reason_count: 'السبب: تجاوز عدد الفيديوهات',
     reason_time: 'السبب: انتهاء الوقت المسموح',
     reason_bypass: 'السبب: محاولة تحايل',
-    checking: 'جاري التحقق...',
-    refreshPage: '○ حدّث الصفحة',
-    youtubeShorts: '● يوتيوب شورتس',
-    unsupportedSite: '○ موقع غير مدعوم',
+    lockedBtn: 'مقفول!',
+    selectPlatform: 'اختر المنصة...',
   },
   dashboard: {
     title: 'مركز قيادة ليمترا',

@@ -5,7 +5,6 @@ import { SessionManager } from '../core/session';
 import { showOverlay, initOverlayListeners } from '../ui/overlay/controller';
 import { storage } from '../core/storage/index';
 import { PlatformAdapter } from '../types';
-// import { GenericAdapter } from './platforms/generic/index';
 
 export class AppOrchestrator {
   private isBlocked = false;
@@ -18,7 +17,6 @@ export class AppOrchestrator {
 
   public async start() {
     initOverlayListeners();
-
     const safeBlock = async (reason: string = 'time') => {
       if (!this.isBlocked) {
         this.isBlocked = true;
@@ -38,12 +36,14 @@ export class AppOrchestrator {
     this.sessionManager = new SessionManager(messenger, this.activeAdapter);
     await this.sessionManager.init();
 
-    let limit = await storage.getLimit();
-    const initialCount = await storage.getCount();
-    let isLimitEnabled = await storage.getEnableLimit();
-    const timeLimitMins = await storage.getTimeLimit();
-    const timeSpentMs = await storage.getTimeSpent();
-    const isTimeEnabled = await storage.getEnableTime();
+    const pId = this.activeAdapter.id;
+
+    let limit = await storage.getLimit(pId);
+    const initialCount = await storage.getCount(pId);
+    let isLimitEnabled = await storage.getEnableLimit(pId);
+    const timeLimitMins = await storage.getTimeLimit(pId);
+    const timeSpentMs = await storage.getTimeSpent(pId);
+    const isTimeEnabled = await storage.getEnableTime(pId);
 
     const limiter = new Limiter(
       { limit: isLimitEnabled ? limit : 0 },
@@ -58,26 +58,24 @@ export class AppOrchestrator {
 
     chrome.storage.onChanged.addListener((changes, namespace) => {
       if (namespace === 'local') {
-        if (changes['limitra_limit'] || changes['limitra_enable_limit']) {
-          if (changes['limitra_limit']) {
-            limit = Number(changes['limitra_limit'].newValue) || 0;
+        if (changes[`limitra_${pId}_limit`] || changes[`limitra_${pId}_enable_limit`]) {
+          if (changes[`limitra_${pId}_limit`]) {
+            limit = Number(changes[`limitra_${pId}_limit`].newValue) || 0;
           }
-          if (changes['limitra_enable_limit']) {
-            isLimitEnabled = Boolean(changes['limitra_enable_limit'].newValue);
+          if (changes[`limitra_${pId}_enable_limit`]) {
+            isLimitEnabled = Boolean(changes[`limitra_${pId}_enable_limit`].newValue);
           }
-
           limiter.setLimit(isLimitEnabled ? limit : 0);
         }
-
-        if (changes['limitra_count']) {
-          const newVal = Number(changes['limitra_count'].newValue) || 0;
+        if (changes[`limitra_${pId}_count`]) {
+          const newVal = Number(changes[`limitra_${pId}_count`].newValue) || 0;
           limiter.setInitialCount(newVal);
           if (isLimitEnabled && limit > 0 && newVal >= limit) {
             void safeBlock('count');
           }
         }
-        if (changes['limitra_time_spent']) {
-          const newTime = Number(changes['limitra_time_spent'].newValue) || 0;
+        if (changes[`limitra_${pId}_time_spent`]) {
+          const newTime = Number(changes[`limitra_${pId}_time_spent`].newValue) || 0;
           if (isTimeEnabled && timeLimitMins > 0 && newTime >= timeLimitMins * 60 * 1000) {
             void safeBlock('time');
           }
@@ -85,8 +83,7 @@ export class AppOrchestrator {
       }
     });
 
-    const bypassed = await storage.detectBypass();
-
+    const bypassed = await storage.detectBypass(pId);
     if (bypassed) {
       await safeBlock('bypass');
     } else if (isLimitEnabled && initialCount >= limit && limit > 0) {
@@ -98,32 +95,25 @@ export class AppOrchestrator {
     const tracker = new Tracker(async () => {
       if (this.isBlocked) {
         const overlay = document.getElementById('limitra-overlay');
-
         const isTampered =
           !overlay ||
           window.getComputedStyle(overlay).display === 'none' ||
           window.getComputedStyle(overlay).visibility === 'hidden' ||
           window.getComputedStyle(overlay).opacity === '0';
-
         if (isTampered) {
           console.warn(
             '[Limitra] Tampering with the blocking interface via DevTools has been detected. Reapplying enforcement...',
           );
-
           if (overlay) overlay.remove();
-
           this.activeAdapter.executePunishment();
           await showOverlay('bypass');
         }
-
         return;
       }
-
       if (isLimitEnabled && limit > 0) {
-        await storage.incrementCount();
+        await storage.incrementCount(pId);
       }
     });
-
     tracker.setAdapter(this.activeAdapter);
     tracker.init();
   }

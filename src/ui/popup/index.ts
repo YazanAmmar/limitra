@@ -1,6 +1,7 @@
 import { storage } from '../../core/storage';
 import { i18n } from '../../i18n/index';
-import { AppAction } from '../../types';
+import { PlatformId } from '../../types';
+import { initCustomSelects } from '../components/custom-select';
 
 const limitInput = document.getElementById('limit') as HTMLInputElement;
 const timeInput = document.getElementById('timeLimit') as HTMLInputElement;
@@ -11,6 +12,9 @@ const btnSettings = document.getElementById('settings-btn') as HTMLButtonElement
 const themeToggleBtn = document.getElementById('theme-toggle') as HTMLButtonElement;
 const sunIcon = document.getElementById('sun-icon') as HTMLElement;
 const moonIcon = document.getElementById('moon-icon') as HTMLElement;
+const platformSelector = document.getElementById('platform-selector') as HTMLSelectElement;
+
+let activePlatform: PlatformId | null = null;
 
 let currentConsumedCount = 0;
 let currentConsumedTimeMs = 0;
@@ -31,7 +35,6 @@ function updateUITexts() {
     'lbl-time-limit': t.popup.timeLimit,
     'lbl-usage-videos': t.popup.videosUnit,
     'lbl-usage-time': t.popup.timeTitle,
-    'site-badge': t.popup.checking,
   };
 
   Object.entries(map).forEach(([id, value]) => setText(id, value));
@@ -93,56 +96,95 @@ function updateProgressBar() {
   }
 }
 
-function setBadgeState(el: HTMLElement, state: 'success' | 'warning' | 'muted') {
-  el.classList.remove('success', 'warning', 'muted');
-  el.classList.add(state);
+function lockUIForSelection() {
+  limitInput.value = '';
+  timeInput.value = '';
+  limitInput.disabled = true;
+  timeInput.disabled = true;
+  toggleLimit.disabled = true;
+  toggleTime.disabled = true;
+  btnSave.disabled = true;
+  btnSave.textContent = i18n.t.popup.selectPlatform;
+
+  setText('stats-videos', `- / -`);
+  setText('stats-time', `- / -`);
+
+  const fillV = document.getElementById('fill-videos') as HTMLElement;
+  if (fillV) fillV.setAttribute('style', `--progress: 0%`);
+
+  const fillT = document.getElementById('fill-time') as HTMLElement;
+  if (fillT) fillT.setAttribute('style', `--progress: 0%`);
 }
 
-async function init() {
-  const savedTheme = await storage.getTheme();
-  applyTheme(savedTheme);
-  currentConsumedCount = await storage.getCount();
-  currentConsumedTimeMs = await storage.getTimeSpent();
+async function loadPlatformData() {
+  if (!activePlatform) return;
+  const [limit, timeLimit, isLimitEnabled, isTimeEnabled, isBlocked, count, timeSpentMs] =
+    await Promise.all([
+      storage.getLimit(activePlatform),
+      storage.getTimeLimit(activePlatform),
+      storage.getEnableLimit(activePlatform),
+      storage.getEnableTime(activePlatform),
+      storage.isCurrentlyBlocked(activePlatform),
+      storage.getCount(activePlatform),
+      storage.getTimeSpent(activePlatform),
+    ]);
 
-  await i18n.init();
-
-  const [limit, timeLimit, isLimitEnabled, isTimeEnabled] = await Promise.all([
-    storage.getLimit(),
-    storage.getTimeLimit(),
-    storage.getEnableLimit(),
-    storage.getEnableTime(),
-  ]);
+  currentConsumedCount = count;
+  currentConsumedTimeMs = timeSpentMs;
 
   limitInput.value = String(limit);
   timeInput.value = String(timeLimit);
   toggleLimit.checked = isLimitEnabled;
   toggleTime.checked = isTimeEnabled;
 
-  limitInput.disabled = !isLimitEnabled;
-  timeInput.disabled = !isTimeEnabled;
+  if (isBlocked) {
+    limitInput.disabled = true;
+    timeInput.disabled = true;
+    toggleLimit.disabled = true;
+    toggleTime.disabled = true;
+    btnSave.disabled = true;
+    btnSave.textContent = i18n.t.popup.lockedBtn;
+    btnSave.classList.add('warning');
+  } else {
+    limitInput.disabled = !isLimitEnabled;
+    timeInput.disabled = !isTimeEnabled;
+    toggleLimit.disabled = false;
+    toggleTime.disabled = false;
+    btnSave.disabled = false;
+    btnSave.textContent = i18n.t.popup.saveBtn;
+    btnSave.classList.remove('warning');
+  }
 
+  updateProgressBar();
+}
+
+async function init() {
+  const savedTheme = await storage.getTheme();
+  applyTheme(savedTheme);
+
+  await i18n.init();
   updateUITexts();
 
-  const siteBadge = document.getElementById('site-badge') as HTMLElement;
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     const currentUrl = currentTab?.url || '';
-    const t = i18n.t;
 
     if (currentUrl.includes('youtube.com') && currentUrl.includes('/shorts/')) {
-      chrome.tabs.sendMessage(currentTab.id!, { action: AppAction.PING }, (response) => {
-        if (chrome.runtime.lastError || !response || response.status !== 'ALIVE') {
-          siteBadge.textContent = t.popup.refreshPage;
-          setBadgeState(siteBadge, 'warning');
-        } else {
-          siteBadge.textContent = t.popup.youtubeShorts;
-          setBadgeState(siteBadge, 'success');
-        }
-      });
+      activePlatform = 'youtube_shorts';
+      platformSelector.value = activePlatform;
+      void loadPlatformData();
     } else {
-      siteBadge.textContent = t.popup.unsupportedSite;
-      setBadgeState(siteBadge, 'muted');
+      activePlatform = null;
+      platformSelector.value = '';
+      lockUIForSelection();
     }
+  });
+
+  initCustomSelects();
+
+  platformSelector.addEventListener('change', (e) => {
+    activePlatform = (e.target as HTMLSelectElement).value as PlatformId;
+    void loadPlatformData();
   });
 
   limitInput.addEventListener('input', updateProgressBar);
@@ -177,12 +219,11 @@ function updateActionIcon(isSystemDark: boolean) {
 
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 updateActionIcon(systemThemeQuery.matches);
-
-systemThemeQuery.addEventListener('change', (event) => {
-  updateActionIcon(event.matches);
-});
+systemThemeQuery.addEventListener('change', (event) => updateActionIcon(event.matches));
 
 btnSave.onclick = async () => {
+  if (!activePlatform) return;
+
   clickCount++;
 
   if (spamResetTimer) clearTimeout(spamResetTimer);
@@ -204,61 +245,104 @@ btnSave.onclick = async () => {
   const limit = Number(limitInput.value);
   const timeLimit = Number(timeInput.value);
 
-  await storage.setLimit(limit);
-  await storage.setTimeLimit(timeLimit);
-  await storage.setEnableLimit(toggleLimit.checked);
-  await storage.setEnableTime(toggleTime.checked);
+  try {
+    await storage.setLimit(activePlatform, limit);
+    await storage.setTimeLimit(activePlatform, timeLimit);
+    await storage.setEnableLimit(activePlatform, toggleLimit.checked);
+    await storage.setEnableTime(activePlatform, toggleTime.checked);
 
-  updateProgressBar();
+    updateProgressBar();
 
-  btnSave.textContent = i18n.t.popup.savedMsg;
+    btnSave.textContent = i18n.t.popup.savedMsg;
+    setTimeout(() => {
+      if (!btnSave.disabled) btnSave.textContent = i18n.t.popup.saveBtn;
+    }, 1500);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'OPERATION_DENIED_BLOCKED') {
+      btnSave.textContent = i18n.t.popup.lockedBtn;
+      btnSave.classList.add('warning');
 
-  setTimeout(() => {
-    if (!btnSave.disabled) btnSave.textContent = i18n.t.popup.saveBtn;
-  }, 1500);
+      await loadPlatformData();
+
+      setTimeout(() => {
+        if (!btnSave.disabled) {
+          btnSave.textContent = i18n.t.popup.saveBtn;
+          btnSave.classList.remove('warning');
+        }
+      }, 2000);
+    } else {
+      console.error('[Limitra] Error saving settings:', error);
+    }
+  }
 };
 
-btnSettings.onclick = () => {
-  void chrome.runtime.openOptionsPage();
-};
+btnSettings.onclick = () => void chrome.runtime.openOptionsPage();
 
 themeToggleBtn.onclick = async () => {
   const current = await storage.getTheme();
   const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
   const next =
     current === 'auto' ? (isSystemDark ? 'light' : 'dark') : current === 'dark' ? 'light' : 'dark';
-
   await storage.setTheme(next);
   applyTheme(next);
 };
 
 chrome.storage.onChanged.addListener((changes) => {
+  if (!activePlatform) return;
+
   let needsUpdate = false;
+  let checkLock = false;
 
-  if (changes['limitra_count']) {
-    currentConsumedCount = Number(changes['limitra_count'].newValue) || 0;
+  if (changes[`limitra_${activePlatform}_count`]) {
+    currentConsumedCount = Number(changes[`limitra_${activePlatform}_count`].newValue) || 0;
     needsUpdate = true;
+    checkLock = true;
   }
-
-  if (changes['limitra_time_spent']) {
-    currentConsumedTimeMs = Number(changes['limitra_time_spent'].newValue) || 0;
+  if (changes[`limitra_${activePlatform}_time_spent`]) {
+    currentConsumedTimeMs = Number(changes[`limitra_${activePlatform}_time_spent`].newValue) || 0;
     needsUpdate = true;
+    checkLock = true;
   }
-
   if (changes['limitra_theme']) {
     applyTheme(changes['limitra_theme'].newValue as string);
   }
-
   if (changes['limitra_language']) {
     updateUITexts();
   }
 
   if (needsUpdate) updateProgressBar();
+
+  if (checkLock) {
+    void storage.isCurrentlyBlocked(activePlatform).then((isBlocked) => {
+      if (isBlocked && !btnSave.disabled) {
+        limitInput.disabled = true;
+        timeInput.disabled = true;
+        toggleLimit.disabled = true;
+        toggleTime.disabled = true;
+        btnSave.disabled = true;
+        btnSave.textContent = i18n.t.popup.lockedBtn;
+        btnSave.classList.add('warning');
+      }
+    });
+  }
 });
 
 [toggleLimit, toggleTime].forEach((toggle) => {
-  toggle.addEventListener('change', () => {
+  toggle.addEventListener('change', async () => {
+    if (!activePlatform) return;
+
+    const isBlocked = await storage.isCurrentlyBlocked(activePlatform);
+    if (isBlocked) {
+      toggleLimit.disabled = true;
+      toggleTime.disabled = true;
+      limitInput.disabled = true;
+      timeInput.disabled = true;
+
+      toggleLimit.checked = await storage.getEnableLimit(activePlatform);
+      toggleTime.checked = await storage.getEnableTime(activePlatform);
+      return;
+    }
+
     limitInput.disabled = !toggleLimit.checked;
     timeInput.disabled = !toggleTime.checked;
     updateProgressBar();

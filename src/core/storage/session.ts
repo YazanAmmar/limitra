@@ -1,8 +1,8 @@
 import { StorageDriver } from './driver';
 import { StatsStorage } from './stats';
+import { PlatformId } from '../../types';
 
 const LAST_RESET_KEY = 'limitra_last_reset';
-const LAST_ACTIVE_KEY = 'limitra_last_active';
 const RESET_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 export class SessionStorage {
@@ -11,32 +11,32 @@ export class SessionStorage {
     private stats: StatsStorage,
   ) {}
 
-  async ensureSession(): Promise<boolean> {
+  async ensureSession(platforms: PlatformId[]): Promise<boolean> {
     const lastReset = await this.driver.get<number>(LAST_RESET_KEY);
     const now = Date.now();
     if (!lastReset || now - lastReset >= RESET_INTERVAL_MS) {
-      await this.stats.resetCount();
-      await this.stats.setTimeSpent(0);
+      for (const platform of platforms) {
+        await this.stats.resetCount(platform);
+        await this.stats.setTimeSpent(platform, 0);
+      }
       await this.driver.set<number>(LAST_RESET_KEY, now);
       return true;
     }
     return false;
   }
 
-  async startSession(): Promise<void> {
-    await this.driver.set<number>(LAST_ACTIVE_KEY, Date.now());
+  async startSession(platform: PlatformId): Promise<void> {
+    await this.driver.set<number>(`limitra_${platform}_last_active`, Date.now());
   }
 
-  async endSession(): Promise<number> {
-    const last = await this.driver.get<number>(LAST_ACTIVE_KEY);
-
+  async endSession(platform: PlatformId): Promise<number> {
+    const key = `limitra_${platform}_last_active`;
+    const last = await this.driver.get<number>(key);
     if (!last || last === 0) return 0;
 
     const delta = Date.now() - last;
-    await this.stats.addTime(delta);
-
-    await this.driver.set<number>(LAST_ACTIVE_KEY, 0);
-
+    await this.stats.addTime(platform, delta);
+    await this.driver.set<number>(key, 0);
     return delta;
   }
 

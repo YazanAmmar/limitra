@@ -1,6 +1,7 @@
-import { PlatformAdapter, ItemChangeCallback } from '../../types';
+import { PlatformAdapter, ItemChangeCallback, PlatformId } from '../../types';
 
 export class GenericAdapter implements PlatformAdapter {
+  public readonly id: PlatformId = 'global';
   public name = 'Generic Website';
 
   public isCurrentPlatform(_url: string): boolean {

@@ -49,7 +49,7 @@ export class SessionManager {
   private async startTracking() {
     if (this.isBlocked) return;
     if (!this.isTracking) {
-      await storage.startSession();
+      await storage.startSession(this.adapter.id);
       this.isTracking = true;
       this.messenger.notifyActive();
     }
@@ -57,7 +57,7 @@ export class SessionManager {
 
   private async stopTracking() {
     if (this.isTracking) {
-      await storage.endSession();
+      await storage.endSession(this.adapter.id);
       this.isTracking = false;
       this.messenger.notifyHidden();
     }
@@ -72,7 +72,7 @@ export class SessionManager {
 
       if (now - this.lastHeartbeat > 5000 && this.isTracking) {
         console.warn('[Limitra] Sleep detected. Erasing time gap.');
-        await storage.startSession();
+        await storage.startSession(this.adapter.id);
         this.lastHeartbeat = now;
         this.lastSyncTime = now;
         return;
@@ -81,14 +81,14 @@ export class SessionManager {
       this.lastHeartbeat = now;
 
       if (this.isTracking && now - this.lastSyncTime >= 10000) {
-        await storage.endSession();
-        await storage.startSession();
+        await storage.endSession(this.adapter.id);
+        await storage.startSession(this.adapter.id);
         this.lastSyncTime = now;
       }
 
       if (document.hidden) return;
 
-      const isTimeEnabled = await storage.getEnableTime();
+      const isTimeEnabled = await storage.getEnableTime(this.adapter.id);
       if (!isTimeEnabled) {
         await this.stopTracking();
         return;

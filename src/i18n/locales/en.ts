@@ -15,10 +15,8 @@ const en: LocaleStrings = {
     reason_count: 'Triggered by: Video Counter',
     reason_time: 'Triggered by: Time Limit',
     reason_bypass: 'Triggered by: Anti-Bypass System',
-    checking: 'Checking...',
-    refreshPage: '○ Refresh Page',
-    youtubeShorts: '● YouTube Shorts',
-    unsupportedSite: '○ Unsupported Site',
+    lockedBtn: 'Locked!',
+    selectPlatform: 'Select Platform...',
   },
   dashboard: {
     title: 'Limitra Command Center',

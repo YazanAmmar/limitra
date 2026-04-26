@@ -1,70 +1,66 @@
 import { StorageDriver } from './driver';
-
-const LIMIT_KEY = 'limitra_limit';
-const TIME_LIMIT_KEY = 'limitra_time_limit';
-const TONE_KEY = 'limitra_quote_tone';
-const LANG_KEY = 'limitra_language';
-const THEME_KEY = 'limitra_theme';
-const TRACKING_MODE_KEY = 'limitra_tracking_mode';
-const ENABLE_LIMIT_KEY = 'limitra_enable_limit';
-const ENABLE_TIME_KEY = 'limitra_enable_time';
+import { PlatformId } from '../../types';
 
 export class SettingsStorage {
   constructor(private driver: StorageDriver) {}
 
-  async getLimit(): Promise<number> {
-    return (await this.driver.get<number>(LIMIT_KEY)) ?? 0;
-  }
-  async setLimit(limit: number): Promise<void> {
-    await this.driver.set<number>(LIMIT_KEY, limit);
-  }
-
-  async getTimeLimit(): Promise<number> {
-    return (await this.driver.get<number>(TIME_LIMIT_KEY)) ?? 0;
-  }
-  async setTimeLimit(minutes: number): Promise<void> {
-    await this.driver.set<number>(TIME_LIMIT_KEY, minutes);
-  }
-
+  // General settings
   async getQuoteTone(): Promise<string> {
-    return (await this.driver.get<string>(TONE_KEY)) ?? 'random';
+    return (await this.driver.get<string>('limitra_quote_tone')) ?? 'random';
   }
   async setQuoteTone(tone: string): Promise<void> {
-    await this.driver.set<string>(TONE_KEY, tone);
+    await this.driver.set('limitra_quote_tone', tone);
   }
 
-  async getLanguage(): Promise<string | null> {
-    return await this.driver.get<string>(LANG_KEY);
+  async getLanguage(): Promise<string> {
+    return (await this.driver.get<string>('limitra_language')) ?? 'en';
   }
   async setLanguage(lang: string): Promise<void> {
-    await this.driver.set<string>(LANG_KEY, lang);
+    await this.driver.set('limitra_language', lang);
   }
 
   async getTheme(): Promise<string> {
-    return (await this.driver.get<string>(THEME_KEY)) ?? 'auto';
+    return (await this.driver.get<string>('limitra_theme')) ?? 'auto';
   }
   async setTheme(theme: string): Promise<void> {
-    await this.driver.set<string>(THEME_KEY, theme);
+    await this.driver.set('limitra_theme', theme);
   }
 
   async getTrackingMode(): Promise<string> {
-    return (await this.driver.get<string>(TRACKING_MODE_KEY)) ?? 'strict';
+    return (await this.driver.get<string>('limitra_tracking_mode')) ?? 'strict';
   }
   async setTrackingMode(mode: string): Promise<void> {
-    await this.driver.set<string>(TRACKING_MODE_KEY, mode);
+    await this.driver.set('limitra_tracking_mode', mode);
   }
 
-  async getEnableLimit(): Promise<boolean> {
-    return (await this.driver.get<boolean>(ENABLE_LIMIT_KEY)) ?? true;
+  // Platform-specific settings
+  async getLimit(platform: PlatformId): Promise<number> {
+    return (await this.driver.get<number>(`limitra_${platform}_limit`)) ?? 0;
   }
-  async setEnableLimit(enabled: boolean): Promise<void> {
-    await this.driver.set<boolean>(ENABLE_LIMIT_KEY, enabled);
+  async setLimit(platform: PlatformId, limit: number): Promise<void> {
+    await this.driver.set(`limitra_${platform}_limit`, limit);
   }
 
-  async getEnableTime(): Promise<boolean> {
-    return (await this.driver.get<boolean>(ENABLE_TIME_KEY)) ?? true;
+  async getTimeLimit(platform: PlatformId): Promise<number> {
+    return (await this.driver.get<number>(`limitra_${platform}_time_limit`)) ?? 0;
   }
-  async setEnableTime(enabled: boolean): Promise<void> {
-    await this.driver.set<boolean>(ENABLE_TIME_KEY, enabled);
+  async setTimeLimit(platform: PlatformId, minutes: number): Promise<void> {
+    await this.driver.set(`limitra_${platform}_time_limit`, minutes);
+  }
+
+  async getEnableLimit(platform: PlatformId): Promise<boolean> {
+    const val = await this.driver.get<boolean>(`limitra_${platform}_enable_limit`);
+    return val ?? true;
+  }
+  async setEnableLimit(platform: PlatformId, enabled: boolean): Promise<void> {
+    await this.driver.set(`limitra_${platform}_enable_limit`, enabled);
+  }
+
+  async getEnableTime(platform: PlatformId): Promise<boolean> {
+    const val = await this.driver.get<boolean>(`limitra_${platform}_enable_time`);
+    return val ?? true;
+  }
+  async setEnableTime(platform: PlatformId, enabled: boolean): Promise<void> {
+    await this.driver.set(`limitra_${platform}_enable_time`, enabled);
   }
 }

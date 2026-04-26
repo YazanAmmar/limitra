@@ -15,10 +15,8 @@ export interface LocaleStrings {
     reason_count: string;
     reason_time: string;
     reason_bypass: string;
-    checking: string;
-    refreshPage: string;
-    youtubeShorts: string;
-    unsupportedSite: string;
+    lockedBtn: string;
+    selectPlatform: string;
   };
   dashboard: {
     title: string;

@@ -3,6 +3,7 @@ import { SettingsStorage } from './settings';
 import { StatsStorage } from './stats';
 import { SessionStorage } from './session';
 import { SecurityStorage } from './security';
+import { PlatformId } from '../../types';
 
 class StorageFacade {
   public driver = new ChromeStorageDriver();
@@ -11,100 +12,148 @@ class StorageFacade {
   public session = new SessionStorage(this.driver, this.stats);
   public security = new SecurityStorage(this.driver, this.stats);
 
-  // Settings
-  async getLimit() {
-    return this.settings.getLimit();
+  /**
+   * Centralized Guard: Checks if the user has exceeded their video or time limits for a specific platform.
+   * Also detects if the user has tampered with the storage.
+   */
+  public async isCurrentlyBlocked(platform: PlatformId): Promise<boolean> {
+    const bypassed = await this.security.detectBypass(platform);
+    if (bypassed) return true;
+
+    const isLimitEnabled = await this.settings.getEnableLimit(platform);
+    if (isLimitEnabled) {
+      const limit = await this.settings.getLimit(platform);
+      const count = await this.stats.getCount(platform);
+      if (limit > 0 && count >= limit) return true;
+    }
+
+    const isTimeEnabled = await this.settings.getEnableTime(platform);
+    if (isTimeEnabled) {
+      const timeLimitMins = await this.settings.getTimeLimit(platform);
+      const timeSpentMs = await this.stats.getTimeSpent(platform);
+      if (timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) return true;
+    }
+
+    return false;
   }
-  async setLimit(limit: number) {
-    return this.settings.setLimit(limit);
+
+  // Custom settings
+  async getLimit(platform: PlatformId) {
+    return this.settings.getLimit(platform);
   }
-  async getTimeLimit() {
-    return this.settings.getTimeLimit();
+  async setLimit(platform: PlatformId, limit: number, overrideGuard: boolean = false) {
+    if (!overrideGuard && (await this.isCurrentlyBlocked(platform))) {
+      throw new Error('OPERATION_DENIED_BLOCKED');
+    }
+    return this.settings.setLimit(platform, limit);
   }
-  async setTimeLimit(minutes: number) {
-    return this.settings.setTimeLimit(minutes);
+
+  async getTimeLimit(platform: PlatformId) {
+    return this.settings.getTimeLimit(platform);
   }
+  async setTimeLimit(platform: PlatformId, minutes: number, overrideGuard: boolean = false) {
+    if (!overrideGuard && (await this.isCurrentlyBlocked(platform))) {
+      throw new Error('OPERATION_DENIED_BLOCKED');
+    }
+    return this.settings.setTimeLimit(platform, minutes);
+  }
+
+  async getEnableLimit(platform: PlatformId) {
+    return this.settings.getEnableLimit(platform);
+  }
+  async setEnableLimit(platform: PlatformId, enabled: boolean, overrideGuard: boolean = false) {
+    if (!overrideGuard && (await this.isCurrentlyBlocked(platform))) {
+      throw new Error('OPERATION_DENIED_BLOCKED');
+    }
+    return this.settings.setEnableLimit(platform, enabled);
+  }
+
+  async getEnableTime(platform: PlatformId) {
+    return this.settings.getEnableTime(platform);
+  }
+  async setEnableTime(platform: PlatformId, enabled: boolean, overrideGuard: boolean = false) {
+    if (!overrideGuard && (await this.isCurrentlyBlocked(platform))) {
+      throw new Error('OPERATION_DENIED_BLOCKED');
+    }
+    return this.settings.setEnableTime(platform, enabled);
+  }
+
+  // General Settings
   async getQuoteTone() {
     return this.settings.getQuoteTone();
   }
   async setQuoteTone(tone: string) {
     return this.settings.setQuoteTone(tone);
   }
+
   async getLanguage() {
     return this.settings.getLanguage();
   }
   async setLanguage(lang: string) {
     return this.settings.setLanguage(lang);
   }
+
   async getTheme() {
     return this.settings.getTheme();
   }
   async setTheme(theme: string) {
     return this.settings.setTheme(theme);
   }
+
   async getTrackingMode() {
     return this.settings.getTrackingMode();
   }
   async setTrackingMode(mode: string) {
     return this.settings.setTrackingMode(mode);
   }
-  async getEnableLimit() {
-    return this.settings.getEnableLimit();
-  }
-  async setEnableLimit(enabled: boolean) {
-    return this.settings.setEnableLimit(enabled);
-  }
-  async getEnableTime() {
-    return this.settings.getEnableTime();
-  }
-  async setEnableTime(enabled: boolean) {
-    return this.settings.setEnableTime(enabled);
-  }
 
   // Analytics
-  async getCount() {
-    return this.stats.getCount();
+  async getCount(platform: PlatformId) {
+    return this.stats.getCount(platform);
   }
-  async setCount(count: number) {
-    return this.stats.setCount(count);
+  async setCount(platform: PlatformId, count: number) {
+    return this.stats.setCount(platform, count);
   }
-  async incrementCount() {
-    return this.stats.incrementCount();
+  async incrementCount(platform: PlatformId) {
+    return this.stats.incrementCount(platform);
   }
-  async resetCount() {
-    return this.stats.resetCount();
+  async resetCount(platform: PlatformId) {
+    return this.stats.resetCount(platform);
   }
-  async getTimeSpent() {
-    return this.stats.getTimeSpent();
+  async getTimeSpent(platform: PlatformId) {
+    return this.stats.getTimeSpent(platform);
   }
-  async setTimeSpent(ms: number) {
-    return this.stats.setTimeSpent(ms);
+  async setTimeSpent(platform: PlatformId, ms: number) {
+    return this.stats.setTimeSpent(platform, ms);
   }
-  async addTime(ms: number) {
-    return this.stats.addTime(ms);
+  async addTime(platform: PlatformId, ms: number) {
+    return this.stats.addTime(platform, ms);
   }
 
   // Sessions
-  async ensureSession() {
-    const wasReset = await this.session.ensureSession();
+  async ensureSession(
+    platforms: PlatformId[] = ['youtube_shorts', 'youtube_watch', 'instagram', 'global'],
+  ) {
+    const wasReset = await this.session.ensureSession(platforms);
     if (wasReset) {
-      await this.security.syncCounters();
+      for (const p of platforms) {
+        await this.security.syncCounters(p);
+      }
     }
   }
-  async startSession() {
-    return this.session.startSession();
+  async startSession(platform: PlatformId) {
+    return this.session.startSession(platform);
   }
-  async endSession() {
-    return this.session.endSession();
+  async endSession(platform: PlatformId) {
+    return this.session.endSession(platform);
   }
-
   async getNextResetTime() {
     return this.session.getNextResetTime();
   }
 
   // Security
-  async detectBypass() {
-    return this.security.detectBypass();
+  async detectBypass(platform: PlatformId) {
+    return this.security.detectBypass(platform);
   }
 }
 
