@@ -36,16 +36,18 @@ function updateUITexts() {
     'lbl-usage-videos': t.popup.videosUnit,
     'lbl-usage-time': t.popup.timeTitle,
   };
-
   Object.entries(map).forEach(([id, value]) => setText(id, value));
 
+  const ytOption = platformSelector.querySelector('option[value="youtube_shorts"]');
+  if (ytOption) ytOption.textContent = t.popup.youtubeShorts;
+
+  const placeholderOption = platformSelector.querySelector('option[value=""]');
+  if (placeholderOption) placeholderOption.textContent = t.popup.selectPlatform;
+
   btnSave.textContent = t.popup.saveBtn;
-
   document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
-
   updateProgressBar();
 }
-
 function updateProgressBar() {
   const isLimitEnabled = toggleLimit.checked;
   const isTimeEnabled = toggleTime.checked;
@@ -103,7 +105,7 @@ function lockUIForSelection() {
   timeInput.disabled = true;
   toggleLimit.disabled = true;
   toggleTime.disabled = true;
-  btnSave.disabled = true;
+  btnSave.disabled = false;
   btnSave.textContent = i18n.t.popup.selectPlatform;
 
   setText('stats-videos', `- / -`);
@@ -165,20 +167,19 @@ async function init() {
   await i18n.init();
   updateUITexts();
 
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const currentTab = tabs[0];
-    const currentUrl = currentTab?.url || '';
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const currentTab = tabs[0];
+  const currentUrl = currentTab?.url || '';
 
-    if (currentUrl.includes('youtube.com') && currentUrl.includes('/shorts/')) {
-      activePlatform = 'youtube_shorts';
-      platformSelector.value = activePlatform;
-      void loadPlatformData();
-    } else {
-      activePlatform = null;
-      platformSelector.value = '';
-      lockUIForSelection();
-    }
-  });
+  if (currentUrl.includes('youtube.com') && currentUrl.includes('/shorts/')) {
+    activePlatform = 'youtube_shorts';
+    platformSelector.value = activePlatform;
+    await loadPlatformData();
+  } else {
+    activePlatform = null;
+    platformSelector.value = '';
+    lockUIForSelection();
+  }
 
   initCustomSelects();
 
@@ -221,11 +222,18 @@ const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 updateActionIcon(systemThemeQuery.matches);
 systemThemeQuery.addEventListener('change', (event) => updateActionIcon(event.matches));
 
-btnSave.onclick = async () => {
-  if (!activePlatform) return;
+btnSave.onclick = async (e: MouseEvent) => {
+  if (!activePlatform) {
+    e.stopPropagation();
+
+    const trigger = document.querySelector('.custom-brutal-trigger') as HTMLElement;
+    if (trigger) {
+      trigger.click();
+    }
+    return;
+  }
 
   clickCount++;
-
   if (spamResetTimer) clearTimeout(spamResetTimer);
   spamResetTimer = window.setTimeout(() => (clickCount = 0), 2000);
 

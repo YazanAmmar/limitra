@@ -80,8 +80,7 @@ export function initCustomSelects(): void {
       select.parentNode.insertBefore(wrapper, select.nextSibling);
     }
 
-    select.addEventListener('change', (e: Event) => {
-      if (!e.isTrusted) return;
+    select.addEventListener('change', () => {
       const newActive = Array.from(select.options).find((opt) => opt.value === select.value);
       if (newActive) {
         selectedText.textContent = newActive.text;

@@ -17,6 +17,7 @@ export interface LocaleStrings {
     reason_bypass: string;
     lockedBtn: string;
     selectPlatform: string;
+    youtubeShorts: string;
   };
   dashboard: {
     title: string;

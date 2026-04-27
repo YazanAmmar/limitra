@@ -17,6 +17,7 @@ const ar: LocaleStrings = {
     reason_bypass: 'السبب: محاولة تحايل',
     lockedBtn: 'مقفول!',
     selectPlatform: 'اختر المنصة...',
+    youtubeShorts: 'يوتيوب شورتس',
   },
   dashboard: {
     title: 'مركز قيادة ليمترا',

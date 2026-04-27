@@ -17,6 +17,7 @@ const en: LocaleStrings = {
     reason_bypass: 'Triggered by: Anti-Bypass System',
     lockedBtn: 'Locked!',
     selectPlatform: 'Select Platform...',
+    youtubeShorts: 'YouTube Shorts',
   },
   dashboard: {
     title: 'Limitra Command Center',
