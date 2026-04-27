@@ -48,6 +48,8 @@ function updateUITexts() {
     'opt-dash-gentle': t.tones.gentle,
     'opt-dash-harsh': t.tones.harsh,
     'opt-dash-phil': t.tones.philosophical,
+    'opt-dash-sarcastic': t.tones.sarcastic,
+    'opt-dash-stoic': t.tones.stoic,
 
     // Tracking
     'lbl-dash-tracking': t.dashboard.trackingMode,

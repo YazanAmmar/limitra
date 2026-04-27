@@ -64,11 +64,15 @@ export interface LocaleStrings {
     gentle: string;
     harsh: string;
     philosophical: string;
+    sarcastic: string;
+    stoic: string;
   };
   quotes: {
     gentle: string[];
     harsh: string[];
     philosophical: string[];
+    sarcastic: string[];
+    stoic: string[];
   };
   overlay: {
     badgeBlocked: string;
