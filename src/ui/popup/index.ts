@@ -48,6 +48,7 @@ function updateUITexts() {
   document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
   updateProgressBar();
 }
+
 function updateProgressBar() {
   const isLimitEnabled = toggleLimit.checked;
   const isTimeEnabled = toggleTime.checked;
@@ -98,6 +99,40 @@ function updateProgressBar() {
   }
 }
 
+function syncUIState(
+  isBlocked: boolean,
+  count: number,
+  timeMs: number,
+  isLimitEnabled: boolean,
+  isTimeEnabled: boolean,
+) {
+  const timeSpentMins = Math.floor(timeMs / (60 * 1000));
+  const hasConsumed = count > 0 || timeSpentMins > 0;
+
+  if (isBlocked) {
+    limitInput.disabled = true;
+    timeInput.disabled = true;
+    toggleLimit.disabled = true;
+    toggleTime.disabled = true;
+    btnSave.disabled = true;
+    btnSave.textContent = i18n.t.popup.lockedBtn;
+  } else if (hasConsumed) {
+    limitInput.disabled = true;
+    timeInput.disabled = true;
+    toggleLimit.disabled = true;
+    toggleTime.disabled = true;
+    btnSave.disabled = true;
+    btnSave.textContent = i18n.t.popup.sessionActiveBtn;
+  } else {
+    limitInput.disabled = !isLimitEnabled;
+    timeInput.disabled = !isTimeEnabled;
+    toggleLimit.disabled = false;
+    toggleTime.disabled = false;
+    btnSave.disabled = false;
+    btnSave.textContent = i18n.t.popup.saveBtn;
+  }
+}
+
 function lockUIForSelection() {
   limitInput.value = '';
   timeInput.value = '';
@@ -139,24 +174,7 @@ async function loadPlatformData() {
   toggleLimit.checked = isLimitEnabled;
   toggleTime.checked = isTimeEnabled;
 
-  if (isBlocked) {
-    limitInput.disabled = true;
-    timeInput.disabled = true;
-    toggleLimit.disabled = true;
-    toggleTime.disabled = true;
-    btnSave.disabled = true;
-    btnSave.textContent = i18n.t.popup.lockedBtn;
-    btnSave.classList.add('warning');
-  } else {
-    limitInput.disabled = !isLimitEnabled;
-    timeInput.disabled = !isTimeEnabled;
-    toggleLimit.disabled = false;
-    toggleTime.disabled = false;
-    btnSave.disabled = false;
-    btnSave.textContent = i18n.t.popup.saveBtn;
-    btnSave.classList.remove('warning');
-  }
-
+  syncUIState(isBlocked, count, timeSpentMs, isLimitEnabled, isTimeEnabled);
   updateProgressBar();
 }
 
@@ -322,15 +340,13 @@ chrome.storage.onChanged.addListener((changes) => {
 
   if (checkLock) {
     void storage.isCurrentlyBlocked(activePlatform).then((isBlocked) => {
-      if (isBlocked && !btnSave.disabled) {
-        limitInput.disabled = true;
-        timeInput.disabled = true;
-        toggleLimit.disabled = true;
-        toggleTime.disabled = true;
-        btnSave.disabled = true;
-        btnSave.textContent = i18n.t.popup.lockedBtn;
-        btnSave.classList.add('warning');
-      }
+      syncUIState(
+        isBlocked,
+        currentConsumedCount,
+        currentConsumedTimeMs,
+        toggleLimit.checked,
+        toggleTime.checked,
+      );
     });
   }
 });
@@ -340,7 +356,11 @@ chrome.storage.onChanged.addListener((changes) => {
     if (!activePlatform) return;
 
     const isBlocked = await storage.isCurrentlyBlocked(activePlatform);
-    if (isBlocked) {
+    const count = await storage.getCount(activePlatform);
+    const timeSpentMs = await storage.getTimeSpent(activePlatform);
+    const hasConsumed = count > 0 || Math.floor(timeSpentMs / (60 * 1000)) > 0;
+
+    if (isBlocked || hasConsumed) {
       toggleLimit.disabled = true;
       toggleTime.disabled = true;
       limitInput.disabled = true;

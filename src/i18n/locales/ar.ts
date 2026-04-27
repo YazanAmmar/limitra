@@ -16,6 +16,7 @@ const ar: LocaleStrings = {
     reason_time: 'السبب: انتهاء الوقت المسموح',
     reason_bypass: 'السبب: محاولة تحايل',
     lockedBtn: 'مقفول!',
+    sessionActiveBtn: 'جلسة نشطة!',
     selectPlatform: 'اختر المنصة...',
     youtubeShorts: 'يوتيوب شورتس',
   },

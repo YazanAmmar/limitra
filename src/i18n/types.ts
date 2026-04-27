@@ -16,6 +16,7 @@ export interface LocaleStrings {
     reason_time: string;
     reason_bypass: string;
     lockedBtn: string;
+    sessionActiveBtn: string;
     selectPlatform: string;
     youtubeShorts: string;
   };

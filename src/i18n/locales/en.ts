@@ -16,6 +16,7 @@ const en: LocaleStrings = {
     reason_time: 'Triggered by: Time Limit',
     reason_bypass: 'Triggered by: Anti-Bypass System',
     lockedBtn: 'Locked!',
+    sessionActiveBtn: 'Session Active!',
     selectPlatform: 'Select Platform...',
     youtubeShorts: 'YouTube Shorts',
   },
