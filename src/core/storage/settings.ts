@@ -1,8 +1,22 @@
 import { StorageDriver } from './driver';
 import { PlatformId } from '../../types';
 
+export const DEFAULT_GLOBAL_SETTINGS = {
+  language: 'en',
+  theme: 'auto',
+  quoteTone: 'random',
+  trackingMode: 'strict',
+};
+
 export class SettingsStorage {
   constructor(private driver: StorageDriver) {}
+
+  async resetGlobalSettings(): Promise<void> {
+    await this.setLanguage(DEFAULT_GLOBAL_SETTINGS.language);
+    await this.setTheme(DEFAULT_GLOBAL_SETTINGS.theme);
+    await this.setQuoteTone(DEFAULT_GLOBAL_SETTINGS.quoteTone);
+    await this.setTrackingMode(DEFAULT_GLOBAL_SETTINGS.trackingMode);
+  }
 
   // General settings
   async getQuoteTone(): Promise<string> {

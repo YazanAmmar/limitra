@@ -112,6 +112,89 @@ section {
   margin-right: -2px;
 }
 
+/* --- Modal Component --- */
+
+.limitra-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+}
+
+.limitra-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.limitra-modal-card {
+  position: relative;
+  background-color: var(--bg-surface);
+  border: 4px solid var(--ui-border);
+  padding: 40px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 12px 12px 0px 0px var(--accent);
+  transform: translateY(20px);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.limitra-modal-overlay.active .limitra-modal-card {
+  transform: translateY(0);
+}
+
+.limitra-modal-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+.limitra-modal-message {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 20px 0;
+}
+
+.limitra-modal-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+.limitra-modal-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.limitra-modal-badge {
+  background-color: var(--text-main);
+  color: var(--bg-surface);
+  box-shadow: 4px 4px 0px 0px var(--accent);
+}
+
 /* --- Toggle (brutal-toggle / toggle-slider) --- */
 
 .theme-toggle-btn,
@@ -868,10 +951,40 @@ select.brutal-select-hidden {
   border: 2px solid var(--ui-border);
   box-shadow: 4px 4px 0 var(--ui-border);
   transition: all 0.1s ease-in-out;
+  cursor: pointer;
 }
 
 .btn-primary:active {
   transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.btn-inverse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  min-width: 140px;
+  width: 100%;
+  border: 2px solid var(--ui-border);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  outline: none;
+  box-shadow: 2px 2px 0 var(--ui-border);
+  transition: all 0.1s ease-in-out;
+}
+
+.btn-inverse:active {
+  transform: translate(2px, 2px);
   box-shadow: none;
 }
 

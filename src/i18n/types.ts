@@ -50,6 +50,14 @@ export interface LocaleStrings {
     descTracking: string;
     footerCopyright: string;
     footerPrivacy: string;
+    groupData: string;
+    resetTitle: string;
+    resetDesc: string;
+    resetBtn: string;
+    confirmResetMsg: string;
+    cancelBtn: string;
+    resettingBtn: string;
+    modalBadgeWarning: string;
   };
   tones: {
     random: string;

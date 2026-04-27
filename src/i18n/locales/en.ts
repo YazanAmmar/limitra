@@ -51,6 +51,16 @@ const en: LocaleStrings = {
     descTracking: 'Determine how Limitra counts your usage.',
     footerCopyright: '© 2026 Limitra. All rights reserved.',
     footerPrivacy: 'Privacy Policy · Terms',
+    groupData: 'Data & Storage',
+    resetTitle: 'Reset Preferences',
+    resetDesc:
+      'Restore general preferences to their default state. This will not affect your limits, stats, or active blocks.',
+    resetBtn: 'Reset',
+    confirmResetMsg:
+      'Are you sure you want to reset all general preferences? Your limits and active blocks will remain safe.',
+    cancelBtn: 'Cancel',
+    resettingBtn: 'Resetting...',
+    modalBadgeWarning: 'WARNING',
   },
   tones: {
     random: 'Random',

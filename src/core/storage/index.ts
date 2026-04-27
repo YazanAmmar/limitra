@@ -37,6 +37,10 @@ class StorageFacade {
     return false;
   }
 
+  async resetGlobalSettings() {
+    return this.settings.resetGlobalSettings();
+  }
+
   // Custom settings
   async getLimit(platform: PlatformId) {
     return this.settings.getLimit(platform);

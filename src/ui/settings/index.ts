@@ -2,6 +2,7 @@ import { storage } from '../../core/storage';
 import { i18n } from '../../i18n/index';
 import { LocaleCode } from '../../i18n/types';
 import { initCustomSelects } from '../components/custom-select';
+import { showModal } from '../components/modal';
 
 function applyTheme(theme: string) {
   const isPageDark =
@@ -58,6 +59,12 @@ function updateUITexts() {
     // Groups
     'group-customization': t.dashboard.groupCustomization,
     'group-security': t.dashboard.groupSecurity,
+
+    // Data
+    'group-data': t.dashboard.groupData,
+    'lbl-dash-reset': t.dashboard.resetTitle,
+    'desc-dash-reset': t.dashboard.resetDesc,
+    'btn-reset-settings': t.dashboard.resetBtn,
 
     // CTA
     'btn-sponsor-text': t.dashboard.btnSponsor,
@@ -159,6 +166,32 @@ async function init() {
     const target = event.target as HTMLSelectElement;
     await storage.setQuoteTone(target.value);
   });
+
+  const btnResetSettings = document.getElementById('btn-reset-settings') as HTMLButtonElement;
+  if (btnResetSettings) {
+    btnResetSettings.addEventListener('click', async () => {
+      const isConfirmed = await showModal({
+        badgeText: i18n.t.dashboard.modalBadgeWarning,
+        title: i18n.t.dashboard.resetTitle,
+        message: i18n.t.dashboard.confirmResetMsg,
+        confirmText: i18n.t.dashboard.resetBtn,
+        cancelText: i18n.t.dashboard.cancelBtn,
+      });
+
+      if (isConfirmed) {
+        btnResetSettings.disabled = true;
+        const originalText = btnResetSettings.textContent;
+        btnResetSettings.textContent = i18n.t.dashboard.resettingBtn;
+
+        await storage.resetGlobalSettings();
+
+        btnResetSettings.textContent = originalText;
+        btnResetSettings.disabled = false;
+
+        window.location.reload();
+      }
+    });
+  }
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
