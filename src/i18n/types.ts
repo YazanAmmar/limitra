@@ -59,6 +59,14 @@ export interface LocaleStrings {
     cancelBtn: string;
     resettingBtn: string;
     modalBadgeWarning: string;
+    blockDurationLabel: string;
+    descBlockDuration: string;
+    duration15m: string;
+    duration1h: string;
+    duration3h: string;
+    duration6h: string;
+    duration12h: string;
+    duration24h: string;
   };
   tones: {
     random: string;

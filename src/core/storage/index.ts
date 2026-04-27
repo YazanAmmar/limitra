@@ -37,6 +37,14 @@ class StorageFacade {
     return false;
   }
 
+  public async isAnyPlatformBlocked(): Promise<boolean> {
+    const platforms: PlatformId[] = ['youtube_shorts', 'youtube_watch', 'instagram', 'global'];
+    for (const p of platforms) {
+      if (await this.isCurrentlyBlocked(p)) return true;
+    }
+    return false;
+  }
+
   async resetGlobalSettings() {
     return this.settings.resetGlobalSettings();
   }
@@ -109,6 +117,21 @@ class StorageFacade {
   }
   async setTrackingMode(mode: string) {
     return this.settings.setTrackingMode(mode);
+  }
+
+  async getBlockDuration() {
+    return this.settings.getBlockDuration();
+  }
+
+  async setBlockDuration(minutes: number) {
+    await this.settings.setBlockDuration(minutes);
+
+    const isAnyBlocked = await this.isAnyPlatformBlocked();
+    if (!isAnyBlocked) {
+      const lastReset = (await this.driver.get<number>('limitra_last_reset')) || Date.now();
+      const newNextReset = lastReset + minutes * 60 * 1000;
+      await this.driver.set('limitra_next_reset', newNextReset);
+    }
   }
 
   // Analytics

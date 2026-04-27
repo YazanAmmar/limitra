@@ -6,6 +6,7 @@ export const DEFAULT_GLOBAL_SETTINGS = {
   theme: 'auto',
   quoteTone: 'random',
   trackingMode: 'strict',
+  blockDuration: 180, // 3 hours
 };
 
 export class SettingsStorage {
@@ -16,6 +17,7 @@ export class SettingsStorage {
     await this.setTheme(DEFAULT_GLOBAL_SETTINGS.theme);
     await this.setQuoteTone(DEFAULT_GLOBAL_SETTINGS.quoteTone);
     await this.setTrackingMode(DEFAULT_GLOBAL_SETTINGS.trackingMode);
+    await this.setBlockDuration(DEFAULT_GLOBAL_SETTINGS.blockDuration);
   }
 
   // General settings
@@ -45,6 +47,17 @@ export class SettingsStorage {
   }
   async setTrackingMode(mode: string): Promise<void> {
     await this.driver.set('limitra_tracking_mode', mode);
+  }
+
+  async getBlockDuration(): Promise<number> {
+    return (
+      (await this.driver.get<number>('limitra_block_duration')) ??
+      DEFAULT_GLOBAL_SETTINGS.blockDuration
+    );
+  }
+
+  async setBlockDuration(minutes: number): Promise<void> {
+    await this.driver.set('limitra_block_duration', minutes);
   }
 
   // Platform-specific settings

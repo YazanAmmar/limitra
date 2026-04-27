@@ -1,9 +1,10 @@
 import { StorageDriver } from './driver';
 import { StatsStorage } from './stats';
 import { PlatformId } from '../../types';
+import { DEFAULT_GLOBAL_SETTINGS } from './settings';
 
 const LAST_RESET_KEY = 'limitra_last_reset';
-const RESET_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const NEXT_RESET_KEY = 'limitra_next_reset';
 
 export class SessionStorage {
   constructor(
@@ -11,15 +12,34 @@ export class SessionStorage {
     private stats: StatsStorage,
   ) {}
 
+  private async getDurationMs(): Promise<number> {
+    const mins =
+      (await this.driver.get<number>('limitra_block_duration')) ??
+      DEFAULT_GLOBAL_SETTINGS.blockDuration;
+    return mins * 60 * 1000;
+  }
+
   async ensureSession(platforms: PlatformId[]): Promise<boolean> {
     const lastReset = await this.driver.get<number>(LAST_RESET_KEY);
+    let nextReset = await this.driver.get<number>(NEXT_RESET_KEY);
     const now = Date.now();
-    if (!lastReset || now - lastReset >= RESET_INTERVAL_MS) {
+
+    if (!nextReset && lastReset) {
+      const intervalMs = await this.getDurationMs();
+      nextReset = lastReset + intervalMs;
+      await this.driver.set(NEXT_RESET_KEY, nextReset);
+    }
+
+    if (!lastReset || !nextReset || now >= nextReset) {
       for (const platform of platforms) {
         await this.stats.resetCount(platform);
         await this.stats.setTimeSpent(platform, 0);
       }
+
+      const intervalMs = await this.getDurationMs();
       await this.driver.set<number>(LAST_RESET_KEY, now);
+      await this.driver.set<number>(NEXT_RESET_KEY, now + intervalMs);
+
       return true;
     }
     return false;
@@ -41,7 +61,11 @@ export class SessionStorage {
   }
 
   async getNextResetTime(): Promise<number> {
+    const nextReset = await this.driver.get<number>(NEXT_RESET_KEY);
+    if (nextReset) return nextReset;
+
     const lastReset = (await this.driver.get<number>(LAST_RESET_KEY)) || Date.now();
-    return lastReset + RESET_INTERVAL_MS;
+    const intervalMs = await this.getDurationMs();
+    return lastReset + intervalMs;
   }
 }

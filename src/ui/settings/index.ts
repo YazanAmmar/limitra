@@ -62,6 +62,16 @@ function updateUITexts() {
     'group-customization': t.dashboard.groupCustomization,
     'group-security': t.dashboard.groupSecurity,
 
+    // Block Duration
+    'lbl-dash-duration': t.dashboard.blockDurationLabel,
+    'desc-dash-duration': t.dashboard.descBlockDuration,
+    'opt-dur-15m': t.dashboard.duration15m,
+    'opt-dur-1h': t.dashboard.duration1h,
+    'opt-dur-3h': t.dashboard.duration3h,
+    'opt-dur-6h': t.dashboard.duration6h,
+    'opt-dur-12h': t.dashboard.duration12h,
+    'opt-dur-24h': t.dashboard.duration24h,
+
     // Data
     'group-data': t.dashboard.groupData,
     'lbl-dash-reset': t.dashboard.resetTitle,
@@ -169,6 +179,13 @@ async function init() {
     await storage.setQuoteTone(target.value);
   });
 
+  const dashDurationInput = document.getElementById('dash-duration') as HTMLSelectElement;
+  dashDurationInput.value = String(await storage.getBlockDuration());
+  dashDurationInput.addEventListener('change', async (event) => {
+    const target = event.target as HTMLSelectElement;
+    await storage.setBlockDuration(Number(target.value));
+  });
+
   const btnResetSettings = document.getElementById('btn-reset-settings') as HTMLButtonElement;
   if (btnResetSettings) {
     btnResetSettings.addEventListener('click', async () => {
@@ -219,6 +236,9 @@ async function init() {
           const currentTracking = dashTrackingInput.value;
           updateTrackingDescription(currentTracking);
         });
+      }
+      if (changes['limitra_block_duration']) {
+        dashDurationInput.value = String(changes['limitra_block_duration'].newValue);
       }
       if (changes['limitra_quote_tone']) {
         dashToneInput.value = String(changes['limitra_quote_tone'].newValue);
