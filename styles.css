@@ -195,6 +195,103 @@ section {
   box-shadow: 4px 4px 0px 0px var(--accent);
 }
 
+/* --- Tooltip --- */
+
+.brutal-tooltip {
+  position: relative;
+  width: fit-content;
+  cursor: help;
+}
+
+.brutal-tooltip[data-tooltip]::before {
+  content: attr(data-tooltip);
+}
+
+.brutal-tooltip::before,
+.brutal-tooltip .tooltip-content {
+  visibility: hidden;
+  width: max-content;
+  max-width: 250px;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  text-align: center;
+  padding: 8px 12px;
+  border: 2px solid var(--ui-border);
+  box-shadow: 4px 4px 0px 0px var(--ui-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.4;
+
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1002;
+
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  pointer-events: none;
+}
+
+.brutal-tooltip::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+
+  background-color: var(--ui-border);
+
+  transform: translateX(-50%) rotate(45deg);
+  left: 50%;
+  bottom: calc(100% + 4px);
+
+  z-index: 1001;
+
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.brutal-tooltip:hover::before,
+.brutal-tooltip:hover::after,
+.brutal-tooltip:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+
+.brutal-tooltip:hover::before,
+.brutal-tooltip:hover .tooltip-content {
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.brutal-tooltip.tooltip-bottom:hover::before,
+.brutal-tooltip.tooltip-bottom:hover .tooltip-content {
+  transform: translateX(-50%) translateY(4px);
+}
+
+.brutal-tooltip:hover::after {
+  transform: translateX(-50%) translateY(-4px) rotate(45deg);
+}
+
+.brutal-tooltip.tooltip-bottom:hover::after {
+  transform: translateX(-50%) translateY(4px) rotate(225deg);
+}
+
+.brutal-tooltip.tooltip-bottom::before,
+.brutal-tooltip.tooltip-bottom .tooltip-content {
+  top: calc(100% + 10px);
+  bottom: auto;
+}
+
+.brutal-tooltip.tooltip-bottom::after {
+  top: calc(100% + 8px);
+  bottom: auto;
+  transform: translateX(-50%) rotate(45deg);
+}
+
 /* --- Toggle (brutal-toggle / toggle-slider) --- */
 
 .theme-toggle-btn,

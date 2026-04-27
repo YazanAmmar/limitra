@@ -3,6 +3,7 @@ import { i18n } from '../../i18n/index';
 import { LocaleCode } from '../../i18n/types';
 import { initCustomSelects } from '../components/custom-select';
 import { showModal } from '../components/modal';
+import { initTooltips } from '../components/tooltip';
 
 function applyTheme(theme: string) {
   const isPageDark =
@@ -253,6 +254,7 @@ async function init() {
   });
 
   initCustomSelects();
+  initTooltips();
 }
 
 void init();
