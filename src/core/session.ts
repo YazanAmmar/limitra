@@ -89,7 +89,9 @@ export class SessionManager {
       if (document.hidden) return;
 
       const isTimeEnabled = await storage.getEnableTime(this.adapter.id);
-      if (!isTimeEnabled) {
+      const timeLimit = await storage.getTimeLimit(this.adapter.id);
+
+      if (!isTimeEnabled || timeLimit <= 0) {
         await this.stopTracking();
         return;
       }

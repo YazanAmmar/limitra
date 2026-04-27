@@ -41,9 +41,10 @@ export class AppOrchestrator {
     let limit = await storage.getLimit(pId);
     const initialCount = await storage.getCount(pId);
     let isLimitEnabled = await storage.getEnableLimit(pId);
-    const timeLimitMins = await storage.getTimeLimit(pId);
-    const timeSpentMs = await storage.getTimeSpent(pId);
-    const isTimeEnabled = await storage.getEnableTime(pId);
+
+    let timeLimitMins = await storage.getTimeLimit(pId);
+    let timeSpentMs = await storage.getTimeSpent(pId);
+    let isTimeEnabled = await storage.getEnableTime(pId);
 
     const limiter = new Limiter(
       { limit: isLimitEnabled ? limit : 0 },
@@ -67,6 +68,7 @@ export class AppOrchestrator {
           }
           limiter.setLimit(isLimitEnabled ? limit : 0);
         }
+
         if (changes[`limitra_${pId}_count`]) {
           const newVal = Number(changes[`limitra_${pId}_count`].newValue) || 0;
           limiter.setInitialCount(newVal);
@@ -74,9 +76,23 @@ export class AppOrchestrator {
             void safeBlock('count');
           }
         }
+
+        if (changes[`limitra_${pId}_time_limit`] || changes[`limitra_${pId}_enable_time`]) {
+          if (changes[`limitra_${pId}_time_limit`]) {
+            timeLimitMins = Number(changes[`limitra_${pId}_time_limit`].newValue) || 0;
+          }
+          if (changes[`limitra_${pId}_enable_time`]) {
+            isTimeEnabled = Boolean(changes[`limitra_${pId}_enable_time`].newValue);
+          }
+
+          if (isTimeEnabled && timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) {
+            void safeBlock('time');
+          }
+        }
+
         if (changes[`limitra_${pId}_time_spent`]) {
-          const newTime = Number(changes[`limitra_${pId}_time_spent`].newValue) || 0;
-          if (isTimeEnabled && timeLimitMins > 0 && newTime >= timeLimitMins * 60 * 1000) {
+          timeSpentMs = Number(changes[`limitra_${pId}_time_spent`].newValue) || 0;
+          if (isTimeEnabled && timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) {
             void safeBlock('time');
           }
         }
