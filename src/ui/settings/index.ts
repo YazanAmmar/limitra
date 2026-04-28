@@ -63,6 +63,12 @@ function updateUITexts() {
     'opt-playing': t.dashboard.modePlayingLabel,
     'opt-smart': t.dashboard.modeSmartLabel,
 
+    // Block Condition
+    'lbl-dash-condition': t.dashboard.blockConditionLabel,
+    'desc-dash-condition': t.dashboard.descBlockCondition,
+    'opt-cond-or': t.dashboard.condOr,
+    'opt-cond-and': t.dashboard.condAnd,
+
     // Groups
     'group-customization': t.dashboard.groupCustomization,
     'group-security': t.dashboard.groupSecurity,
@@ -135,6 +141,18 @@ function updateTrackingDescription(mode: string) {
   el.textContent = map[mode] || '';
 }
 
+function updateConditionDescription(mode: string) {
+  const t = i18n.t;
+  const el = document.getElementById('desc-dash-condition') as HTMLElement;
+  if (!el) return;
+
+  const map: Record<string, string> = {
+    or: t.dashboard.descCondOr,
+    and: t.dashboard.descCondAnd,
+  };
+  el.textContent = map[mode] || '';
+}
+
 async function init() {
   const savedTheme = await storage.getTheme();
   applyTheme(savedTheme);
@@ -167,6 +185,17 @@ async function init() {
 
     await storage.setTrackingMode(target.value);
     updateTrackingDescription(target.value);
+  });
+
+  const dashConditionInput = document.getElementById('dash-condition') as HTMLSelectElement;
+  const savedCondition = await storage.getBlockCondition();
+  dashConditionInput.value = savedCondition;
+  updateConditionDescription(savedCondition);
+
+  dashConditionInput.addEventListener('change', async (event) => {
+    const target = event.target as HTMLSelectElement;
+    await storage.setBlockCondition(target.value);
+    updateConditionDescription(target.value);
   });
 
   const dashThemeInput = document.getElementById('dash-theme') as HTMLSelectElement;
@@ -240,7 +269,13 @@ async function init() {
 
           const currentTracking = dashTrackingInput.value;
           updateTrackingDescription(currentTracking);
+          updateConditionDescription(dashConditionInput.value);
         });
+      }
+      if (changes['limitra_block_condition']) {
+        const newCond = String(changes['limitra_block_condition'].newValue);
+        dashConditionInput.value = newCond;
+        updateConditionDescription(newCond);
       }
       if (changes['limitra_block_duration']) {
         dashDurationInput.value = String(changes['limitra_block_duration'].newValue);

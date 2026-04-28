@@ -29,6 +29,13 @@ if (!window.__LIMITRA_INJECTED__) {
       isBootstrapping = true;
 
       try {
+        const ghostOverlay = document.getElementById('limitra-overlay');
+        if (ghostOverlay) {
+          console.warn('[Limitra] Removing ghost overlay from previous installation.');
+          ghostOverlay.remove();
+          document.body.classList.remove('limitra-global-punishment');
+        }
+
         if (currentApp) {
           console.warn('[Limitra] Platform change detected. Destroying old instance...');
           currentApp.destroy();

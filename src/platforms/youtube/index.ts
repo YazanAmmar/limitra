@@ -4,7 +4,7 @@ import { StorageChangeListener } from '../../core/storage/driver';
 import { StorageFacade } from '../../core/storage/index';
 
 export class YouTubeAdapter implements PlatformAdapter {
-  public id: PlatformId;
+  public readonly id: PlatformId;
   public name: string;
 
   // Dynamic threshold: 1.5s for Shorts, 10s for regular Watch videos

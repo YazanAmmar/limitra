@@ -27,20 +27,41 @@ export class StorageFacade {
     if (bypassed) return true;
 
     const isLimitEnabled = await this.settings.getEnableLimit(platform);
+    const isTimeEnabled = await this.settings.getEnableTime(platform);
+
+    let limitReached = false;
+    let hasLimitRule = false;
     if (isLimitEnabled) {
       const limit = await this.settings.getLimit(platform);
-      const count = await this.stats.getCount(platform);
-      if (limit > 0 && count >= limit) return true;
+      if (limit > 0) {
+        hasLimitRule = true;
+        const count = await this.stats.getCount(platform);
+        limitReached = count >= limit;
+      }
     }
 
-    const isTimeEnabled = await this.settings.getEnableTime(platform);
+    let timeReached = false;
+    let hasTimeRule = false;
     if (isTimeEnabled) {
       const timeLimitMins = await this.settings.getTimeLimit(platform);
-      const timeSpentMs = await this.stats.getTimeSpent(platform);
-      if (timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) return true;
+      if (timeLimitMins > 0) {
+        hasTimeRule = true;
+        const timeSpentMs = await this.stats.getTimeSpent(platform);
+        timeReached = timeSpentMs >= timeLimitMins * 60 * 1000;
+      }
     }
 
-    return false;
+    if (!hasLimitRule && !hasTimeRule) return false;
+    if (hasLimitRule && !hasTimeRule) return limitReached;
+    if (!hasLimitRule && hasTimeRule) return timeReached;
+
+    // Both rules are active, check the user's preference
+    const condition = await this.settings.getBlockCondition();
+    if (condition === 'and') {
+      return limitReached && timeReached;
+    } else {
+      return limitReached || timeReached;
+    }
   }
 
   public async isAnyPlatformBlocked(): Promise<boolean> {
@@ -146,6 +167,13 @@ export class StorageFacade {
       const newNextReset = lastReset + minutes * 60 * 1000;
       await this.driver.set('limitra_next_reset', newNextReset);
     }
+  }
+
+  async getBlockCondition() {
+    return this.settings.getBlockCondition();
+  }
+  async setBlockCondition(condition: string) {
+    return this.settings.setBlockCondition(condition);
   }
 
   // Analytics

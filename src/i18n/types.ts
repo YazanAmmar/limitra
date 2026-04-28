@@ -15,6 +15,7 @@ export interface LocaleStrings {
     reason_count: string;
     reason_time: string;
     reason_bypass: string;
+    reason_both: string;
     lockedBtn: string;
     sessionActiveBtn: string;
     selectPlatform: string;
@@ -68,6 +69,12 @@ export interface LocaleStrings {
     duration6h: string;
     duration12h: string;
     duration24h: string;
+    blockConditionLabel: string;
+    descBlockCondition: string;
+    condOr: string;
+    condAnd: string;
+    descCondOr: string;
+    descCondAnd: string;
   };
   tones: {
     random: string;

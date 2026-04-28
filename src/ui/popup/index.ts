@@ -150,8 +150,8 @@ function lockUIForSelection() {
   btnSave.disabled = false;
   btnSave.textContent = i18n.t.popup.selectPlatform;
 
-  setText('stats-videos', `- / -`);
-  setText('stats-time', `- / -`);
+  setText('stats-videos', `-- / --`);
+  setText('stats-time', `-- / --`);
 
   const fillV = document.getElementById('fill-videos') as HTMLElement;
   if (fillV) fillV.setAttribute('style', `--progress: 0%`);

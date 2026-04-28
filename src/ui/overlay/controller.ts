@@ -18,12 +18,14 @@ export async function showOverlay(reasonKey: string = 'time'): Promise<void> {
   const toneKey = await storage.getQuoteTone();
   const quoteText = i18n.getRandomQuote(toneKey);
 
-  const reasonText =
-    reasonKey === 'count'
-      ? i18n.t.popup.reason_count
-      : reasonKey === 'bypass'
-        ? i18n.t.popup.reason_bypass
-        : i18n.t.popup.reason_time;
+  const reasonMap: Record<string, string> = {
+    count: i18n.t.popup.reason_count,
+    time: i18n.t.popup.reason_time,
+    bypass: i18n.t.popup.reason_bypass,
+    both: i18n.t.popup.reason_both,
+  };
+
+  const reasonText = reasonMap[reasonKey] || i18n.t.popup.reason_time;
 
   const badgeText = i18n.t.overlay.badgeBlocked;
   const unlocksInText = i18n.t.overlay.unlocksIn;

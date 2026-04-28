@@ -137,6 +137,21 @@
 
                 <div class="setting-item">
                   <div class="setting-info">
+                    <h5 class="setting-title" id="lbl-dash-condition">Block Condition</h5>
+                    <p class="setting-desc" id="desc-dash-condition">
+                      Choose when the block screen should appear if both limits are active.
+                    </p>
+                  </div>
+                  <div class="setting-control">
+                    <select id="dash-condition" class="brutal-select">
+                      <option value="or" id="opt-cond-or">Strict (OR)</option>
+                      <option value="and" id="opt-cond-and">Flexible (AND)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
                     <h5 class="setting-title" id="lbl-dash-duration">Block Duration</h5>
                     <p class="setting-desc" id="desc-dash-duration">
                       Select how long a platform remains blocked after reaching the limit.

@@ -40,15 +40,41 @@ export class AppOrchestrator {
     const pId = this.activeAdapter.id;
 
     const safeBlock = async (reason: string = 'time') => {
-      if (!this.isBlocked) {
-        this.isBlocked = true;
-        console.warn(`[Limitra] Initiating block logic. Reason: ${reason}`);
-        if (this.sessionManager) {
-          await this.sessionManager.blockSession();
+      if (this.isBlocked) return;
+
+      const reallyBlocked = await this.storage.isCurrentlyBlocked(pId);
+      if (!reallyBlocked) return;
+
+      this.isBlocked = true;
+
+      let finalReason = reason;
+
+      if (reason !== 'bypass') {
+        const isLimitEnabled = await this.storage.getEnableLimit(pId);
+        const limit = await this.storage.getLimit(pId);
+        const count = await this.storage.getCount(pId);
+        const limitReached = isLimitEnabled && limit > 0 && count >= limit;
+
+        const isTimeEnabled = await this.storage.getEnableTime(pId);
+        const timeLimit = await this.storage.getTimeLimit(pId);
+        const timeSpent = await this.storage.getTimeSpent(pId);
+        const timeReached = isTimeEnabled && timeLimit > 0 && timeSpent >= timeLimit * 60 * 1000;
+
+        if (limitReached && timeReached) {
+          finalReason = 'both';
+        } else if (limitReached) {
+          finalReason = 'count';
+        } else if (timeReached) {
+          finalReason = 'time';
         }
-        this.activeAdapter.executePunishment();
-        await showOverlay(reason);
       }
+
+      console.warn(`[Limitra] Initiating block logic. Reason: ${finalReason}`);
+      if (this.sessionManager) {
+        await this.sessionManager.blockSession();
+      }
+      this.activeAdapter.executePunishment();
+      await showOverlay(finalReason);
     };
 
     this.messenger = new Messenger(

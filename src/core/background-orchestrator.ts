@@ -40,8 +40,11 @@ export class BackgroundOrchestrator {
     const limitMs = timeLimitMins * 60 * 1000;
 
     if (timeSpentMs >= limitMs) {
-      const message: ExtensionMessage = { action: AppAction.BLOCK_NOW, platform };
-      await this.tabManager.sendMessageToPattern(config.urlPatterns, message);
+      const reallyBlocked = await this.storage.isCurrentlyBlocked(platform);
+      if (reallyBlocked) {
+        const message: ExtensionMessage = { action: AppAction.BLOCK_NOW, platform };
+        await this.tabManager.sendMessageToPattern(config.urlPatterns, message);
+      }
     } else {
       const timeRemainingMs = limitMs - timeSpentMs;
       let delayInMinutes = timeRemainingMs / 60000;
