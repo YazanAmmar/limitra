@@ -1,12 +1,17 @@
-import { PlatformAdapter, ItemChangeCallback, PlatformId } from '../../types';
+import { PlatformAdapter, ItemChangeCallback } from '../../core/interfaces/platform-adapter';
+import { PlatformId } from '../../types';
 import { StorageChangeListener } from '../../core/storage/driver';
 import { StorageFacade } from '../../core/storage/index';
 
 export class YouTubeAdapter implements PlatformAdapter {
-  public readonly id: PlatformId = 'youtube_shorts';
-  public name = 'YouTube Shorts';
+  public id: PlatformId;
+  public name: string;
 
-  private readonly WATCH_THRESHOLD = 1500;
+  // Dynamic threshold: 1.5s for Shorts, 10s for regular Watch videos
+  private get WATCH_THRESHOLD() {
+    return this.id === 'youtube_shorts' ? 1500 : 10000;
+  }
+
   private readonly BLOCKED_KEYS = [' ', 'k', 'ArrowUp', 'ArrowDown'];
 
   private storageListener: StorageChangeListener | null = null;
@@ -28,7 +33,15 @@ export class YouTubeAdapter implements PlatformAdapter {
 
   private countedVideos = new Set<string>();
 
-  constructor(private storage: StorageFacade) {}
+  constructor(
+    private storage: StorageFacade,
+    currentUrl: string,
+    private onModeChange: () => void,
+  ) {
+    const isShorts = currentUrl.includes('/shorts/');
+    this.id = isShorts ? 'youtube_shorts' : 'youtube_watch';
+    this.name = isShorts ? 'YouTube Shorts' : 'YouTube Watch';
+  }
 
   private startOrResumeWatchTimer(id: string) {
     if (this.isWatching) return;
@@ -68,7 +81,7 @@ export class YouTubeAdapter implements PlatformAdapter {
   }
 
   public isCurrentPlatform(url: string): boolean {
-    return url.includes('youtube.com') && url.includes('/shorts/');
+    return url.includes('youtube.com');
   }
 
   public observe(onItemChange: ItemChangeCallback): void {
@@ -192,13 +205,34 @@ export class YouTubeAdapter implements PlatformAdapter {
     window.addEventListener('keydown', this.keydownHandler, true);
   }
 
+  // Unified ID extraction supporting both Shorts and Watch URLs
   private getVideoId(url: string): string | null {
-    const match = url.match(/shorts\/([^?]+)/);
-    return match ? match[1] : null;
+    if (url.includes('/shorts/')) {
+      const match = url.match(/shorts\/([^?]+)/);
+      return match ? match[1] : null;
+    } else if (url.includes('/watch')) {
+      try {
+        const urlParams = new URLSearchParams(new URL(url).search);
+        return urlParams.get('v');
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }
 
   private checkUrl() {
-    const currentId = this.getVideoId(window.location.href);
+    const currentUrl = window.location.href;
+    const isShorts = currentUrl.includes('/shorts/');
+    const evaluatedMode: PlatformId = isShorts ? 'youtube_shorts' : 'youtube_watch';
+
+    // TRIGGER HOT-SWAP: If the user navigated across platform boundaries
+    if (evaluatedMode !== this.id) {
+      this.onModeChange();
+      return;
+    }
+
+    const currentId = this.getVideoId(currentUrl);
 
     if (currentId !== this.lastVideoId) {
       this.lastVideoId = currentId;

@@ -19,6 +19,7 @@ const ar: LocaleStrings = {
     sessionActiveBtn: 'جلسة نشطة!',
     selectPlatform: 'اختر المنصة...',
     youtubeShorts: 'يوتيوب شورتس',
+    youtubeWatch: 'يوتيوب العادي',
   },
   dashboard: {
     title: 'مركز قيادة ليمترا',

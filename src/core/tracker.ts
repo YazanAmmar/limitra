@@ -1,8 +1,8 @@
-import { PlatformAdapter, ItemChangeCallback } from '../types';
+import { PlatformAdapter, ItemChangeCallback } from '../core/interfaces/platform-adapter';
 
 export class Tracker {
   private adapter: PlatformAdapter | null = null;
-  private callback: ItemChangeCallback;
+  private callback: ItemChangeCallback | null = null;
 
   constructor(callback: ItemChangeCallback) {
     this.callback = callback;
@@ -23,14 +23,25 @@ export class Tracker {
       console.warn('[Tracker] No platform adapter set.');
       return;
     }
-    this.adapter.observe((itemId) => {
-      this.callback(itemId);
-    });
+    if (this.callback) {
+      this.adapter.observe((itemId) => {
+        if (this.callback) this.callback(itemId);
+      });
+    }
   }
 
   public stop() {
     if (this.adapter) {
       this.adapter.disconnect();
     }
+  }
+
+  /**
+   * Destroys the tracker instance, disconnects adapters, and clears memory references
+   */
+  public destroy() {
+    this.stop();
+    this.adapter = null;
+    this.callback = null;
   }
 }

@@ -19,6 +19,7 @@ export interface LocaleStrings {
     sessionActiveBtn: string;
     selectPlatform: string;
     youtubeShorts: string;
+    youtubeWatch: string;
   };
   dashboard: {
     title: string;

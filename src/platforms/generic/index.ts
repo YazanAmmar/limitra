@@ -1,4 +1,5 @@
-import { PlatformAdapter, ItemChangeCallback, PlatformId } from '../../types';
+import { PlatformAdapter, ItemChangeCallback } from '../../core/interfaces/platform-adapter';
+import { PlatformId } from '../../types';
 
 export class GenericAdapter implements PlatformAdapter {
   public readonly id: PlatformId = 'global';

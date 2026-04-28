@@ -19,6 +19,7 @@ const en: LocaleStrings = {
     sessionActiveBtn: 'Session Active!',
     selectPlatform: 'Select Platform...',
     youtubeShorts: 'YouTube Shorts',
+    youtubeWatch: 'YouTube Watch',
   },
   dashboard: {
     title: 'Limitra Command Center',

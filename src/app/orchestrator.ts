@@ -5,7 +5,7 @@ import { SessionManager } from '../core/session';
 import { showOverlay, initOverlayListeners } from '../ui/overlay/controller';
 import { ConnectionManager } from '../core/interfaces/connection-manager';
 import { StorageFacade } from '../core/storage/index';
-import { PlatformAdapter } from '../types';
+import { PlatformAdapter } from '../core/interfaces/platform-adapter';
 import { StorageChange } from '../core/storage/driver';
 import { MessageBus } from '../core/interfaces/message-bus';
 
@@ -17,6 +17,10 @@ export class AppOrchestrator {
   private storage: StorageFacade;
 
   private sessionManager!: SessionManager;
+  private messenger!: Messenger;
+  private tracker!: Tracker;
+
+  private storageListener: ((changes: Record<string, StorageChange>) => void) | null = null;
 
   constructor(
     adapter: PlatformAdapter,
@@ -32,9 +36,13 @@ export class AppOrchestrator {
 
   public async start() {
     initOverlayListeners();
+
+    const pId = this.activeAdapter.id;
+
     const safeBlock = async (reason: string = 'time') => {
       if (!this.isBlocked) {
         this.isBlocked = true;
+        console.warn(`[Limitra] Initiating block logic. Reason: ${reason}`);
         if (this.sessionManager) {
           await this.sessionManager.blockSession();
         }
@@ -43,20 +51,23 @@ export class AppOrchestrator {
       }
     };
 
-    const messenger = new Messenger(() => {
-      void safeBlock('time');
-    }, this.messageBus);
-    messenger.init();
+    this.messenger = new Messenger(
+      () => {
+        void safeBlock('time');
+      },
+      this.messageBus,
+      pId,
+    );
+
+    this.messenger.init();
 
     this.sessionManager = new SessionManager(
-      messenger,
+      this.messenger,
       this.activeAdapter,
       this.connectionManager,
       this.storage,
     );
     await this.sessionManager.init();
-
-    const pId = this.activeAdapter.id;
 
     let limit = await this.storage.getLimit(pId);
     const initialCount = await this.storage.getCount(pId);
@@ -77,7 +88,7 @@ export class AppOrchestrator {
     );
     limiter.setInitialCount(initialCount);
 
-    this.storage.onChange((changes: Record<string, StorageChange>) => {
+    this.storageListener = (changes: Record<string, StorageChange>) => {
       if (changes[`limitra_${pId}_limit`] || changes[`limitra_${pId}_enable_limit`]) {
         if (changes[`limitra_${pId}_limit`]) {
           limit = Number(changes[`limitra_${pId}_limit`].newValue) || 0;
@@ -114,7 +125,9 @@ export class AppOrchestrator {
           void safeBlock('time');
         }
       }
-    });
+    };
+
+    this.storage.onChange(this.storageListener);
 
     const bypassed = await this.storage.detectBypass(pId);
     if (bypassed) {
@@ -125,7 +138,7 @@ export class AppOrchestrator {
       await safeBlock('time');
     }
 
-    const tracker = new Tracker(async () => {
+    this.tracker = new Tracker(async () => {
       if (this.isBlocked) {
         const overlay = document.getElementById('limitra-overlay');
         const isTampered =
@@ -135,7 +148,7 @@ export class AppOrchestrator {
           window.getComputedStyle(overlay).opacity === '0';
         if (isTampered) {
           console.warn(
-            '[Limitra] Tampering with the blocking interface via DevTools has been detected. Reapplying enforcement...',
+            '[Limitra] Tampering or SPA page refresh detected. Reapplying enforcement...',
           );
           if (overlay) overlay.remove();
           this.activeAdapter.executePunishment();
@@ -143,11 +156,35 @@ export class AppOrchestrator {
         }
         return;
       }
+
       if (isLimitEnabled && limit > 0) {
         await this.storage.incrementCount(pId);
       }
     });
-    tracker.setAdapter(this.activeAdapter);
-    tracker.init();
+    this.tracker.setAdapter(this.activeAdapter);
+    this.tracker.init();
+  }
+
+  public destroy() {
+    if (this.storageListener) {
+      this.storage.removeListener(this.storageListener);
+      this.storageListener = null;
+    }
+    if (this.messenger) {
+      this.messenger.destroy();
+    }
+    if (this.activeAdapter) {
+      this.activeAdapter.disconnect();
+    }
+    if (this.sessionManager) {
+      this.sessionManager.destroy();
+    }
+    if (this.tracker) {
+      this.tracker.destroy();
+    }
+
+    const overlay = document.getElementById('limitra-overlay');
+    if (overlay) overlay.remove();
+    document.body.classList.remove('limitra-global-punishment');
   }
 }

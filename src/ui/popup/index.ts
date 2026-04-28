@@ -42,8 +42,11 @@ function updateUITexts() {
   };
   Object.entries(map).forEach(([id, value]) => setText(id, value));
 
-  const ytOption = platformSelector.querySelector('option[value="youtube_shorts"]');
-  if (ytOption) ytOption.textContent = t.popup.youtubeShorts;
+  const ytShortsOption = platformSelector.querySelector('option[value="youtube_shorts"]');
+  if (ytShortsOption) ytShortsOption.textContent = t.popup.youtubeShorts;
+
+  const ytWatchOption = platformSelector.querySelector('option[value="youtube_watch"]');
+  if (ytWatchOption) ytWatchOption.textContent = t.popup.youtubeWatch;
 
   const placeholderOption = platformSelector.querySelector('option[value=""]');
   if (placeholderOption) placeholderOption.textContent = t.popup.selectPlatform;
@@ -193,8 +196,8 @@ async function init() {
   const currentTab = tabs[0];
   const currentUrl = currentTab?.url || '';
 
-  if (currentUrl.includes('youtube.com') && currentUrl.includes('/shorts/')) {
-    activePlatform = 'youtube_shorts';
+  if (currentUrl.includes('youtube.com')) {
+    activePlatform = currentUrl.includes('/shorts/') ? 'youtube_shorts' : 'youtube_watch';
     platformSelector.value = activePlatform;
     await loadPlatformData();
   } else {

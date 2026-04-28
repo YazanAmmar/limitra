@@ -1,6 +1,6 @@
 import { StorageFacade } from './storage/index';
 import { Messenger } from './messenger';
-import { PlatformAdapter } from '../types';
+import { PlatformAdapter } from '../core/interfaces/platform-adapter';
 import { ConnectionManager } from './interfaces/connection-manager';
 
 export class SessionManager {
@@ -13,6 +13,16 @@ export class SessionManager {
   private isBlocked = false;
   private heartbeatId: ReturnType<typeof window.setInterval> | null = null;
   private connectionManager: ConnectionManager;
+
+  private activityHandler = () => {
+    this.lastActivityTime = Date.now();
+  };
+
+  private visibilityHandler = async () => {
+    if (this.isBlocked) return;
+    if (document.hidden) await this.stopTracking();
+    else this.lastActivityTime = Date.now();
+  };
 
   constructor(
     messenger: Messenger,
@@ -44,13 +54,7 @@ export class SessionManager {
 
   private setupActivityListeners() {
     ['mousemove', 'keydown', 'scroll', 'click'].forEach((event) => {
-      window.addEventListener(
-        event,
-        () => {
-          this.lastActivityTime = Date.now();
-        },
-        { passive: true },
-      );
+      window.addEventListener(event, this.activityHandler, { passive: true });
     });
   }
 
@@ -119,14 +123,25 @@ export class SessionManager {
   }
 
   private observeVisibility() {
-    document.addEventListener('visibilitychange', async () => {
-      if (this.isBlocked) return;
-      if (document.hidden) await this.stopTracking();
-      else this.lastActivityTime = Date.now();
-    });
+    document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
   private setupUnloadHandler() {
     this.connectionManager.connect('limitra-session');
+  }
+
+  public destroy() {
+    if (this.heartbeatId !== null) {
+      window.clearInterval(this.heartbeatId);
+      this.heartbeatId = null;
+    }
+
+    ['mousemove', 'keydown', 'scroll', 'click'].forEach((event) => {
+      window.removeEventListener(event, this.activityHandler);
+    });
+
+    document.removeEventListener('visibilitychange', this.visibilityHandler);
+
+    void this.stopTracking();
   }
 }
