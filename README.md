@@ -45,15 +45,15 @@ Limitra is a Chromium extension designed to **enforce hard limits on how you spe
 
 ## Overview
 
-Limitra is a Chromium extension designed to **enforce hard limits on YouTube Shorts**.
+Limitra is a Chromium extension designed to **enforce hard limits on YouTube** - both Shorts and regular Watch pages.
 
 Instead of reminders or nudges, it applies strict blocking once your limits are reached - helping you break out of endless scrolling loops.
 
 You can define limits based on:
 
-- Number of Shorts watched
+- Number of videos watched
 - Active session time
-- Or both combined
+- Or both combined - with your choice of **Strict** (either limit triggers) or **Flexible** (both limits must be reached) enforcement
 
 When a limit is exceeded, Limitra immediately blocks playback using a fullscreen overlay that cannot be easily bypassed.
 
@@ -81,7 +81,7 @@ Limitra immediately blocks access when limits are reached - no reminders, no byp
 
 ### Settings / Command Center
 
-Configure your limits, tracking mode, theme, and behavior from a dedicated control panel.
+Configure your limits, tracking mode, block condition, block duration, theme, and behavior from a dedicated control panel.
 
 <p align="center">
 <img width="720" alt="Settings Dashboard" src="assets/screenshots/settings.png" />
@@ -90,8 +90,9 @@ Configure your limits, tracking mode, theme, and behavior from a dedicated contr
 ## Why Limitra?
 
 - **Hard limits that actually stop you**: playback is paused, muted, and blocked the moment you hit your limit.
-- **Two dimensions of control**: track by watched Shorts count, session time, or both together.
-- **Designed against easy workarounds**: Limitra watches for counter resets, suspicious wipes, and hidden overlays.
+- **Two dimensions of control**: track by watched video count, session time, or both together.
+- **Your rules, your conditions**: choose whether one limit or both limits must be reached before enforcement kicks in.
+- **Designed against easy workarounds**: Limitra watches for counter resets, suspicious wipes, and hidden overlays - and locks settings during active blocks.
 - **Built for practical daily use**: quick popup stats, clear settings, theme support, and multilingual UI.
 
 ## Features
@@ -99,10 +100,19 @@ Configure your limits, tracking mode, theme, and behavior from a dedicated contr
 ### Enforcement Core
 
 - Dual-limit system based on **video count** and **active session time**
+- **Block Condition** setting: `Strict` (OR - either limit triggers a block) or `Flexible` (AND - both limits must be reached)
+- **Customizable block duration**: choose how long a block lasts, from 15 minutes to 24 hours
 - Fullscreen enforcement overlay triggered instantly on limit breach
-- Clear enforcement reasons: count, time, or anti-bypass
+- Dynamic enforcement reason display: `Count`, `Time`, `Time & Video Limits`, or `Bypass`
 - Automatic pause and mute of active videos
 - Disables playback-related keyboard shortcuts
+- Settings are locked during an active block to prevent last-second changes
+
+### Platform Support
+
+- **YouTube Shorts**: tracks video count and session time with a 1.5-second watch threshold
+- **YouTube Watch**: tracks regular video viewing with a 10-second watch threshold
+- **Hot-swap detection**: automatically switches tracking context when navigating between Shorts and Watch without a page reload
 
 ### Tracking & Intelligence
 
@@ -116,13 +126,18 @@ Configure your limits, tracking mode, theme, and behavior from a dedicated contr
 - Detects manual counter resets and storage manipulation
 - Prevents overlay removal via DevTools or CSS tampering
 - Identifies rapid storage wipe attempts
+- Smart session lock: block duration is frozen at enforcement time to prevent clock manipulation
+- Central `isCurrentlyBlocked()` gatekeeper enforced before any punishment executes
 - Enforces immediate blocking when suspicious behavior is detected
 
 ### User Interface
 
 - Live usage stats and progress bars in the popup
-- Dedicated **Command Center** dashboard for managing limits, modes, themes, and behavior
-- Motivational quote system with multiple tone styles
+- Context-aware popup: auto-selects the active platform or shows a platform selector on unsupported pages
+- Dedicated **Command Center** dashboard for managing limits, modes, block condition, block duration, themes, and behavior
+- Motivational quote system with multiple tone styles: Random, Gentle, Harsh, Philosophical, Sarcastic, Stoic
+- Brutalist tooltip components for inline option explanations
+- Confirmation modal for destructive actions (e.g., global settings reset)
 - Light, Dark, and System themes
 - Clean and responsive UI across all views
 
@@ -151,6 +166,7 @@ src/
 │   │   ├── alarm-manager.ts
 │   │   ├── connection-manager.ts
 │   │   ├── message-bus.ts
+│   │   ├── platform-adapter.ts
 │   │   └── tab-manager.ts
 │   ├── storage/              # Persistence layer - settings, stats, sessions, security
 │   ├── background-orchestrator.ts # Environment-agnostic background logic
@@ -159,19 +175,19 @@ src/
 │   ├── tracker.ts            # Delegates URL observation to the active adapter
 │   └── messenger.ts          # Typed message bus wrapper
 ├── platforms/
-│   ├── youtube/index.ts      # YouTube Shorts adapter
+│   ├── youtube/index.ts      # YouTube Shorts + Watch adapter (with hot-swap support)
 │   └── generic/index.ts      # Fallback adapter
 ├── ui/
 │   ├── popup/                # Extension popup UI
 │   ├── settings/             # Command Center dashboard
 │   ├── overlay/              # Blocking screen (renderer, controller, persistence)
-│   └── components/           # Reusable UI components
+│   └── components/           # Reusable UI components (tooltip, modal, custom-select)
 ├── i18n/                     # Internationalization (types, singleton, locale files)
 ├── _locales/                 # Chrome manifest-level translations
 ├── assets/                   # Icons and static assets
 ├── background.ts             # Composition Root - Service Worker entry point
 ├── content.ts                # Composition Root - injected page script entry point
-└── types.ts                  # Shared types (PlatformAdapter, AppAction, messages)
+└── types.ts                  # Shared types (PlatformId, AppAction, messages)
 ```
 
 ## Getting Started
@@ -227,11 +243,12 @@ npm test
 
 For full release notes, see [CHANGELOG.md](./CHANGELOG.md).
 
+- **1.1.0**: YouTube Watch support, flexible block conditions (AND/OR), customizable block duration, improved anti-bypass logic, new UI components (modal, tooltip), and major internal architecture upgrades.
 - **1.0.0**: First stable release with dual-limit enforcement, blocking overlay, anti-bypass protection, popup stats, settings dashboard, theme support, and English/Arabic localization.
 
 ## Roadmap
 
-- Expand beyond YouTube Shorts into other high-distraction platforms (TikTok, Reels, etc.)
+- Expand beyond YouTube into other high-distraction platforms (TikTok, Instagram Reels, etc.)
 - Add richer analytics and historical usage views.
 - Improve anti-bypass hardening for more edge cases.
 - Introduce smarter recovery, reset, and scheduling options.

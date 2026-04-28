@@ -1,7 +1,7 @@
 {
   "name": "limitra",
-  "version": "1.0.0",
-  "description": "If willpower worked, you wouldn't be here. Limitra enforces the limit.",
+  "version": "1.1.0",
+  "description": "If willpower worked, you wouldn't be here. Set hard limits. Limitra enforces them.",
   "type": "module",
   "scripts": {
     "format": "prettier --write \"src/**/*.{ts,js,json,html}\" \"docs/**/*.html\"",
