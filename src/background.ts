@@ -1,103 +1,29 @@
-import { storage } from './core/storage/index';
-import { AppAction, ExtensionMessage, PlatformId, PLATFORMS_CONFIG } from './types';
+import { StorageFacade } from './core/storage/index';
+import { ChromeStorageDriver } from './adapters/chrome/storage-driver';
+import { PlatformId, PLATFORMS_CONFIG } from './types';
+import { ChromeAlarmManager } from './adapters/chrome/alarm-manager';
+import { ChromeTabManager } from './adapters/chrome/tab-manager';
+import { ChromeMessageBus } from './adapters/chrome/message-bus';
+import { BackgroundOrchestrator } from './core/background-orchestrator';
 
-async function checkTimeLimitForPlatform(platform: PlatformId) {
-  const alarmName = `limitra_block_alarm_${platform}`;
-  const config = PLATFORMS_CONFIG[platform];
-  if (!config) return;
+const alarmManager = new ChromeAlarmManager();
+const tabManager = new ChromeTabManager();
+const messageBus = new ChromeMessageBus();
+const storageDriver = new ChromeStorageDriver();
+const storage = new StorageFacade(storageDriver);
 
-  const isTimeEnabled = await storage.getEnableTime(platform);
-  if (!isTimeEnabled) {
-    void chrome.alarms.clear(alarmName);
-    return;
-  }
-
-  const timeLimitMins = await storage.getTimeLimit(platform);
-  if (timeLimitMins <= 0) {
-    void chrome.alarms.clear(alarmName);
-    return;
-  }
-
-  const timeSpentMs = await storage.getTimeSpent(platform);
-  const limitMs = timeLimitMins * 60 * 1000;
-
-  if (timeSpentMs >= limitMs) {
-    const message: ExtensionMessage = { action: AppAction.BLOCK_NOW };
-
-    const tabs = await chrome.tabs.query({ url: config.urlPatterns });
-    for (const tab of tabs) {
-      if (tab.id) {
-        chrome.tabs.sendMessage(tab.id, message).catch(() => {});
-      }
-    }
-  } else {
-    const timeRemainingMs = limitMs - timeSpentMs;
-    let delayInMinutes = timeRemainingMs / 60000;
-    delayInMinutes = Number(Math.max(0.1, delayInMinutes).toFixed(2));
-    void chrome.alarms.create(alarmName, { delayInMinutes });
-  }
-}
-
-async function checkAllTimeLimits() {
-  const platforms = Object.keys(PLATFORMS_CONFIG) as PlatformId[];
-  for (const platform of platforms) {
-    void checkTimeLimitForPlatform(platform);
-  }
-}
-
-chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender) => {
-  if (message.action === AppAction.TAB_ACTIVE && sender.tab?.id) {
-    void checkAllTimeLimits();
-  } else if (message.action === AppAction.TAB_HIDDEN && sender.tab?.id) {
-    const platforms = Object.keys(PLATFORMS_CONFIG) as PlatformId[];
-    platforms.forEach((platform) => {
-      void chrome.tabs.query({ url: PLATFORMS_CONFIG[platform].urlPatterns }).then((tabs) => {
-        if (tabs.length === 0) {
-          void chrome.alarms.clear(`limitra_block_alarm_${platform}`);
-        }
-      });
-    });
-  }
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name.startsWith('limitra_block_alarm_')) {
-    const platform = alarm.name.replace('limitra_block_alarm_', '') as PlatformId;
-    void checkTimeLimitForPlatform(platform);
-  }
-});
-
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local') {
-    if (changes['limitra_last_reset']) {
-      void checkAllTimeLimits();
-      return;
-    }
-
-    const platforms = Object.keys(PLATFORMS_CONFIG) as PlatformId[];
-    for (const platform of platforms) {
-      if (
-        changes[`limitra_${platform}_time_limit`] ||
-        changes[`limitra_${platform}_enable_time`] ||
-        changes[`limitra_${platform}_time_spent`]
-      ) {
-        void checkTimeLimitForPlatform(platform);
-      }
-    }
-  }
-});
+const orchestrator = new BackgroundOrchestrator(alarmManager, tabManager, messageBus, storage);
+orchestrator.init();
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'limitra-session') return;
-
   port.onDisconnect.addListener(async () => {
     const platforms = Object.keys(PLATFORMS_CONFIG) as PlatformId[];
     for (const platform of platforms) {
       await storage.endSession(platform);
-
-      const tabs = await chrome.tabs.query({ url: PLATFORMS_CONFIG[platform].urlPatterns });
-      if (tabs.length === 0) {
-        void chrome.alarms.clear(`limitra_block_alarm_${platform}`);
+      const hasTabs = await tabManager.hasActiveTabs(PLATFORMS_CONFIG[platform].urlPatterns);
+      if (!hasTabs) {
+        await alarmManager.clear(`limitra_block_alarm_${platform}`);
       }
     }
   });
@@ -130,11 +56,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         }
       }
 
-      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const iconPath = isSystemDark
-        ? 'assets/manifest/32x32-dark.png'
-        : 'assets/manifest/32x32-light.png';
-      void chrome.action.setIcon({ path: iconPath });
+      const savedTheme = await storage.getTheme();
+      const iconPath =
+        savedTheme === 'dark'
+          ? 'assets/manifest/32x32-dark.png'
+          : 'assets/manifest/32x32-light.png';
+      void chrome.action.setIcon({ path: iconPath }).catch(() => {});
 
       const platforms = Object.keys(PLATFORMS_CONFIG) as PlatformId[];
       for (const platform of platforms) {

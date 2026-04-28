@@ -1,43 +1,36 @@
 import { AppAction, ExtensionMessage } from '../types';
+import { MessageBus } from './interfaces/message-bus';
 
 export class Messenger {
   private onBlockCallback: () => void;
+  private messageBus: MessageBus;
 
-  private messageListener = (
-    message: unknown,
-    _sender: chrome.runtime.MessageSender,
-    _sendResponse: (response?: unknown) => void,
-  ) => {
-    const extMessage = message as ExtensionMessage;
-
-    if (extMessage && extMessage.action === AppAction.BLOCK_NOW) {
+  private messageListener = (message: ExtensionMessage) => {
+    if (message && message.action === AppAction.BLOCK_NOW) {
       console.warn('[Messenger] Received BLOCK_NOW from background');
       this.onBlockCallback();
     }
   };
 
-  constructor(onBlock: () => void) {
+  constructor(onBlock: () => void, messageBus: MessageBus) {
     this.onBlockCallback = onBlock;
+    this.messageBus = messageBus;
   }
 
   public init() {
-    this.listenToBackground();
+    this.messageBus.onMessage(this.messageListener);
     this.notifyActive();
   }
 
   public destroy() {
-    chrome.runtime.onMessage.removeListener(this.messageListener);
+    this.messageBus.removeListener(this.messageListener);
   }
 
   public notifyActive() {
-    void chrome.runtime.sendMessage({ action: AppAction.TAB_ACTIVE });
+    void this.messageBus.sendMessage({ action: AppAction.TAB_ACTIVE });
   }
 
   public notifyHidden() {
-    void chrome.runtime.sendMessage({ action: AppAction.TAB_HIDDEN });
-  }
-
-  private listenToBackground() {
-    chrome.runtime.onMessage.addListener(this.messageListener);
+    void this.messageBus.sendMessage({ action: AppAction.TAB_HIDDEN });
   }
 }

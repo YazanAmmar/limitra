@@ -101,6 +101,16 @@ This includes:
 
 PRs that fail checks will not be reviewed.
 
+### 7. Architecture: Ports & Adapters
+
+The project strictly follows the Ports and Adapters (Hexagonal) architecture to keep the core logic environment-agnostic.
+
+- **Chrome APIs:** Any code that directly calls `chrome.*` must be placed exclusively inside `src/adapters/chrome/`.
+- **Core Interfaces:** Communication between the `core/` and the outside world must happen through interfaces defined in `src/core/interfaces/`.
+- **Composition Roots:** Dependencies are injected only at the entry points: `src/content.ts` and `src/background.ts`.
+
+**Example:** If you add a feature that requires a new Chrome API, you must first define an interface in `core/interfaces/`, then implement it in `adapters/chrome/`, and finally inject it via the Composition Root.
+
 ## Pull Request Guidelines
 
 - Keep PRs focused and minimal

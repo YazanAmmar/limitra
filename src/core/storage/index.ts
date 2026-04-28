@@ -1,16 +1,22 @@
-import { ChromeStorageDriver } from './driver';
+import { StorageDriver, StorageChangeListener } from './driver';
 import { SettingsStorage } from './settings';
 import { StatsStorage } from './stats';
 import { SessionStorage } from './session';
 import { SecurityStorage } from './security';
 import { PlatformId } from '../../types';
 
-class StorageFacade {
-  public driver = new ChromeStorageDriver();
-  public settings = new SettingsStorage(this.driver);
-  public stats = new StatsStorage(this.driver);
-  public session = new SessionStorage(this.driver, this.stats);
-  public security = new SecurityStorage(this.driver, this.stats);
+export class StorageFacade {
+  public settings: SettingsStorage;
+  public stats: StatsStorage;
+  public session: SessionStorage;
+  public security: SecurityStorage;
+
+  constructor(public driver: StorageDriver) {
+    this.settings = new SettingsStorage(this.driver);
+    this.stats = new StatsStorage(this.driver);
+    this.session = new SessionStorage(this.driver, this.stats);
+    this.security = new SecurityStorage(this.driver, this.stats);
+  }
 
   /**
    * Centralized Guard: Checks if the user has exceeded their video or time limits for a specific platform.
@@ -43,6 +49,14 @@ class StorageFacade {
       if (await this.isCurrentlyBlocked(p)) return true;
     }
     return false;
+  }
+
+  public onChange(listener: StorageChangeListener) {
+    this.driver.onChange(listener);
+  }
+
+  public removeListener(listener: StorageChangeListener) {
+    this.driver.removeListener(listener);
   }
 
   async resetGlobalSettings() {
@@ -183,5 +197,3 @@ class StorageFacade {
     return this.security.detectBypass(platform);
   }
 }
-
-export const storage = new StorageFacade();

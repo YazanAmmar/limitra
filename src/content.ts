@@ -1,5 +1,9 @@
 import { YouTubeAdapter } from './platforms/youtube/index';
 import { AppOrchestrator } from './app/orchestrator';
+import { ChromeMessageBus } from './adapters/chrome/message-bus';
+import { ChromeConnectionManager } from './adapters/chrome/connection-manager';
+import { ChromeStorageDriver } from './adapters/chrome/storage-driver';
+import { StorageFacade } from './core/storage/index';
 
 declare global {
   interface Window {
@@ -12,9 +16,13 @@ if (!window.__LIMITRA_INJECTED__) {
 
   void (async () => {
     try {
-      const adapters = [new YouTubeAdapter()];
-      const currentUrl = location.href;
+      const storageDriver = new ChromeStorageDriver();
+      const storage = new StorageFacade(storageDriver);
+      const messageBus = new ChromeMessageBus();
+      const connectionManager = new ChromeConnectionManager();
 
+      const adapters = [new YouTubeAdapter(storage)];
+      const currentUrl = location.href;
       const activeAdapter = adapters.find((adapter) => adapter.isCurrentPlatform(currentUrl));
 
       if (!activeAdapter) {
@@ -22,7 +30,7 @@ if (!window.__LIMITRA_INJECTED__) {
         return;
       }
 
-      const app = new AppOrchestrator(activeAdapter);
+      const app = new AppOrchestrator(activeAdapter, messageBus, connectionManager, storage);
       await app.start();
     } catch (err) {
       console.error('[Limitra] Bootstrap failed:', err);

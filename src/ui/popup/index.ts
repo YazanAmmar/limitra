@@ -1,7 +1,11 @@
-import { storage } from '../../core/storage';
+import { StorageFacade } from '../../core/storage/index';
+import { ChromeStorageDriver } from '../../adapters/chrome/storage-driver';
 import { i18n } from '../../i18n/index';
 import { PlatformId } from '../../types';
 import { initCustomSelects } from '../components/custom-select';
+
+const storageDriver = new ChromeStorageDriver();
+const storage = new StorageFacade(storageDriver);
 
 const limitInput = document.getElementById('limit') as HTMLInputElement;
 const timeInput = document.getElementById('timeLimit') as HTMLInputElement;

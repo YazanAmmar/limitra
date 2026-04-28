@@ -1,7 +1,11 @@
 import { LocaleCode, LocaleStrings } from './types';
 import en from './locales/en';
 import ar from './locales/ar';
-import { storage } from '../core/storage';
+import { StorageFacade } from '../core/storage/index';
+import { ChromeStorageDriver } from '../adapters/chrome/storage-driver';
+
+const storageDriver = new ChromeStorageDriver();
+const storage = new StorageFacade(storageDriver);
 
 const LOCALES: Record<LocaleCode, LocaleStrings> = {
   en,

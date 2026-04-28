@@ -1,9 +1,13 @@
-import { storage } from '../../core/storage';
+import { StorageFacade } from '../../core/storage/index';
+import { ChromeStorageDriver } from '../../adapters/chrome/storage-driver';
 import { i18n } from '../../i18n/index';
 import { LocaleCode } from '../../i18n/types';
 import { initCustomSelects } from '../components/custom-select';
 import { showModal } from '../components/modal';
 import { initTooltips } from '../components/tooltip';
+
+const storageDriver = new ChromeStorageDriver();
+const storage = new StorageFacade(storageDriver);
 
 function applyTheme(theme: string) {
   const isPageDark =

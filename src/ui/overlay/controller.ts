@@ -1,7 +1,11 @@
-import { storage } from '../../core/storage';
+import { StorageFacade } from '../../core/storage/index';
+import { ChromeStorageDriver } from '../../adapters/chrome/storage-driver';
 import { i18n } from '../../i18n/index';
 import { renderOverlay, updateOverlayTheme } from './renderer';
 import { watchOverlayPersistence } from './persistence';
+
+const storageDriver = new ChromeStorageDriver();
+const storage = new StorageFacade(storageDriver);
 
 /**
  * Main entry to show overlay

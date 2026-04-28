@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { storage } from '../src/core/storage';
+import { StorageFacade } from '../src/core/storage/index';
+import { ChromeStorageDriver } from '../src/adapters/chrome/storage-driver';
 import { PlatformId } from '../src/types';
 
 const mockStorage: Record<string, unknown> = {};
@@ -20,10 +21,15 @@ vi.stubGlobal('chrome', {
 });
 
 describe('Scoped Storage Architecture (Multi-Platform Isolation)', () => {
+  let storage: StorageFacade;
+
   beforeEach(() => {
     for (const key in mockStorage) delete mockStorage[key];
     vi.clearAllMocks();
     vi.useFakeTimers();
+
+    const driver = new ChromeStorageDriver();
+    storage = new StorageFacade(driver);
   });
 
   afterEach(() => {

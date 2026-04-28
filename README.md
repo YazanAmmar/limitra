@@ -137,43 +137,41 @@ Configure your limits, tracking mode, theme, and behavior from a dedicated contr
 
 ```text
 src/
+├── adapters/                 # Chrome-specific implementations (Composition Layer)
+│   └── chrome/
+│       ├── alarm-manager.ts
+│       ├── connection-manager.ts
+│       ├── message-bus.ts
+│       ├── storage-driver.ts
+│       └── tab-manager.ts
 ├── app/
-│   └── orchestrator.ts       # Wires everything together, owns the block flow
+│   └── orchestrator.ts       # Wires core components, owns the content-side block flow
 ├── core/
-│   ├── limiter.ts            # Pure counter logic (no Chrome APIs)
-│   ├── session.ts            # Heartbeat, idle detection, activity tracking
+│   ├── interfaces/           # Abstract contracts (Ports) - no platform dependencies
+│   │   ├── alarm-manager.ts
+│   │   ├── connection-manager.ts
+│   │   ├── message-bus.ts
+│   │   └── tab-manager.ts
+│   ├── storage/              # Persistence layer - settings, stats, sessions, security
+│   ├── background-orchestrator.ts # Environment-agnostic background logic
+│   ├── limiter.ts            # Pure counting and limit enforcement logic
+│   ├── session.ts            # Heartbeat, activity tracking, and unload handling
 │   ├── tracker.ts            # Delegates URL observation to the active adapter
-│   ├── messenger.ts          # content - background message bus
-│   └── storage/              # Settings, stats, sessions, and security storage
+│   └── messenger.ts          # Typed message bus wrapper
 ├── platforms/
-│   ├── youtube/index.ts      # YouTube adapter (Videos detection + tracking)
+│   ├── youtube/index.ts      # YouTube Shorts adapter
 │   └── generic/index.ts      # Fallback adapter
 ├── ui/
-│   ├── popup/
-│   │   ├── index.html        # Extension popup UI
-│   │   └── index.ts          # Popup logic
-│   │
-│   ├── settings/
-│   │   ├── index.html        # Options page (settings UI)
-│   │   └── index.ts          # Settings logic
-│   │
-│   ├── overlay/
-│   │   ├── controller.ts     # Orchestrates overlay (data + events)
-│   │   ├── persistence.ts    # Ensures overlay cannot be removed (observer)
-│   │   └── renderer.ts       # Pure DOM builder + countdown timer
-│   │
-│   └── components/           # Reusable UI components (custom controls)
-├── i18n/
-│   ├── types.ts              # LocaleStrings interface (type-safe translations)
-│   ├── index.ts              # i18n singleton with locale switching
-│   └── locales/
-│       ├── en.ts
-│       └── ar.ts
-├── _locales/                 # Chrome extension translations (manifest-level)
+│   ├── popup/                # Extension popup UI
+│   ├── settings/             # Command Center dashboard
+│   ├── overlay/              # Blocking screen (renderer, controller, persistence)
+│   └── components/           # Reusable UI components
+├── i18n/                     # Internationalization (types, singleton, locale files)
+├── _locales/                 # Chrome manifest-level translations
 ├── assets/                   # Icons and static assets
-├── background.ts             # Alarm-based time limit checker (background worker)
-├── content.ts                # Entry point, adapter selection
-└── types.ts                  # Shared types (AppAction, messages, adapters)
+├── background.ts             # Composition Root - Service Worker entry point
+├── content.ts                # Composition Root - injected page script entry point
+└── types.ts                  # Shared types (PlatformAdapter, AppAction, messages)
 ```
 
 ## Getting Started

@@ -1,6 +1,7 @@
-import { storage } from './storage/index';
+import { StorageFacade } from './storage/index';
 import { Messenger } from './messenger';
 import { PlatformAdapter } from '../types';
+import { ConnectionManager } from './interfaces/connection-manager';
 
 export class SessionManager {
   private messenger: Messenger;
@@ -11,14 +12,21 @@ export class SessionManager {
   private isTracking = false;
   private isBlocked = false;
   private heartbeatId: ReturnType<typeof window.setInterval> | null = null;
+  private connectionManager: ConnectionManager;
 
-  constructor(messenger: Messenger, adapter: PlatformAdapter) {
+  constructor(
+    messenger: Messenger,
+    adapter: PlatformAdapter,
+    connectionManager: ConnectionManager,
+    private storage: StorageFacade,
+  ) {
     this.messenger = messenger;
     this.adapter = adapter;
+    this.connectionManager = connectionManager;
   }
 
   public async init() {
-    await storage.ensureSession();
+    await this.storage.ensureSession();
     this.setupActivityListeners();
     this.observeVisibility();
     this.startHeartbeat();
@@ -49,7 +57,7 @@ export class SessionManager {
   private async startTracking() {
     if (this.isBlocked) return;
     if (!this.isTracking) {
-      await storage.startSession(this.adapter.id);
+      await this.storage.startSession(this.adapter.id);
       this.isTracking = true;
       this.messenger.notifyActive();
     }
@@ -57,7 +65,7 @@ export class SessionManager {
 
   private async stopTracking() {
     if (this.isTracking) {
-      await storage.endSession(this.adapter.id);
+      await this.storage.endSession(this.adapter.id);
       this.isTracking = false;
       this.messenger.notifyHidden();
     }
@@ -66,13 +74,13 @@ export class SessionManager {
   private startHeartbeat() {
     this.heartbeatId = window.setInterval(async () => {
       if (this.isBlocked) return;
-      await storage.ensureSession();
+      await this.storage.ensureSession();
 
       const now = Date.now();
 
       if (now - this.lastHeartbeat > 5000 && this.isTracking) {
         console.warn('[Limitra] Sleep detected. Erasing time gap.');
-        await storage.startSession(this.adapter.id);
+        await this.storage.startSession(this.adapter.id);
         this.lastHeartbeat = now;
         this.lastSyncTime = now;
         return;
@@ -81,22 +89,22 @@ export class SessionManager {
       this.lastHeartbeat = now;
 
       if (this.isTracking && now - this.lastSyncTime >= 10000) {
-        await storage.endSession(this.adapter.id);
-        await storage.startSession(this.adapter.id);
+        await this.storage.endSession(this.adapter.id);
+        await this.storage.startSession(this.adapter.id);
         this.lastSyncTime = now;
       }
 
       if (document.hidden) return;
 
-      const isTimeEnabled = await storage.getEnableTime(this.adapter.id);
-      const timeLimit = await storage.getTimeLimit(this.adapter.id);
+      const isTimeEnabled = await this.storage.getEnableTime(this.adapter.id);
+      const timeLimit = await this.storage.getTimeLimit(this.adapter.id);
 
       if (!isTimeEnabled || timeLimit <= 0) {
         await this.stopTracking();
         return;
       }
 
-      const mode = await storage.getTrackingMode();
+      const mode = await this.storage.getTrackingMode();
       const isPlaying = this.adapter.isVideoPlaying();
       const isIdle = now - this.lastActivityTime > 10000;
 
@@ -119,6 +127,6 @@ export class SessionManager {
   }
 
   private setupUnloadHandler() {
-    chrome.runtime.connect({ name: 'limitra-session' });
+    this.connectionManager.connect('limitra-session');
   }
 }
