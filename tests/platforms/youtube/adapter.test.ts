@@ -1,30 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { YouTubeAdapter } from '../../src/platforms/youtube/index';
-import { StorageFacade } from '../../src/core/storage/index';
-import { ChromeStorageDriver } from '../../src/adapters/chrome/storage-driver';
-
-// Mocking Chrome API
-vi.stubGlobal('chrome', {
-  storage: {
-    local: {
-      get: vi.fn((_, cb) => cb({})),
-      set: vi.fn((_, cb) => cb()),
-    },
-    onChanged: {
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    },
-  },
-});
+import { YouTubeAdapter } from '../../../src/platforms/youtube/adapter';
 
 describe('YouTubeAdapter', () => {
-  let storage: StorageFacade;
   let mockOnModeChange: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    const driver = new ChromeStorageDriver();
-    storage = new StorageFacade(driver);
     mockOnModeChange = vi.fn();
   });
 
@@ -35,7 +16,6 @@ describe('YouTubeAdapter', () => {
   describe('URL Parsing and Identity', () => {
     it('should identify YouTube Shorts correctly', () => {
       const adapter = new YouTubeAdapter(
-        storage,
         'https://www.youtube.com/shorts/12345',
         mockOnModeChange,
       );
@@ -45,7 +25,6 @@ describe('YouTubeAdapter', () => {
 
     it('should identify standard YouTube Watch correctly', () => {
       const adapter = new YouTubeAdapter(
-        storage,
         'https://www.youtube.com/watch?v=12345',
         mockOnModeChange,
       );
@@ -54,7 +33,7 @@ describe('YouTubeAdapter', () => {
     });
 
     it('should identify the root YouTube domain as Watch mode', () => {
-      const adapter = new YouTubeAdapter(storage, 'https://www.youtube.com/', mockOnModeChange);
+      const adapter = new YouTubeAdapter('https://www.youtube.com/', mockOnModeChange);
       expect(adapter.id).toBe('youtube_watch');
     });
   });
@@ -62,7 +41,6 @@ describe('YouTubeAdapter', () => {
   describe('Hot-Swap Triggering', () => {
     it('should trigger onModeChange when navigating from Shorts to Watch', () => {
       const adapter = new YouTubeAdapter(
-        storage,
         'https://www.youtube.com/shorts/abc',
         mockOnModeChange,
       );

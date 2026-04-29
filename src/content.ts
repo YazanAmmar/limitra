@@ -1,4 +1,4 @@
-import { YouTubeAdapter } from './platforms/youtube/index';
+import { YouTubeAdapter } from './platforms/youtube/adapter';
 import { AppOrchestrator } from './app/orchestrator';
 import { ChromeMessageBus } from './adapters/chrome/message-bus';
 import { ChromeConnectionManager } from './adapters/chrome/connection-manager';
@@ -45,7 +45,7 @@ if (!window.__LIMITRA_INJECTED__) {
         const currentUrl = location.href;
 
         const adapters = [
-          new YouTubeAdapter(storage, currentUrl, () => {
+          new YouTubeAdapter(currentUrl, () => {
             void bootstrap();
           }),
         ];

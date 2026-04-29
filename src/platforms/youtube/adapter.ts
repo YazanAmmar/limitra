@@ -1,46 +1,37 @@
 import { PlatformAdapter, ItemChangeCallback } from '../../core/interfaces/platform-adapter';
 import { PlatformId } from '../../types';
-import { StorageChangeListener } from '../../core/storage/driver';
-import { StorageFacade } from '../../core/storage/index';
+import { isYouTubeUrl, getVideoId, getPlatformType } from './parser';
+import { YouTubeDomEnforcer } from './enforcer';
 
 export class YouTubeAdapter implements PlatformAdapter {
   public readonly id: PlatformId;
   public name: string;
 
-  // Dynamic threshold: 1.5s for Shorts, 10s for regular Watch videos
   private get WATCH_THRESHOLD() {
     return this.id === 'youtube_shorts' ? 1500 : 10000;
   }
 
-  private readonly BLOCKED_KEYS = [' ', 'k', 'ArrowUp', 'ArrowDown'];
-
-  private storageListener: StorageChangeListener | null = null;
   private callback: ItemChangeCallback | null = null;
-
   private lastVideoId: string | null = null;
   private pendingVideoId: string | null = null;
 
-  private punishmentObserver: MutationObserver | null = null;
-  private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
-
   private ytNavigationHandler: ((e: Event) => void) | null = null;
   private popstateHandler: (() => void) | null = null;
+  private visibilityHandler: (() => void) | null = null;
   private urlCheckInterval: number | null = null;
 
   private watchTimer: number | null = null;
   private isWatching: boolean = false;
-  private visibilityHandler: (() => void) | null = null;
-
   private countedVideos = new Set<string>();
 
+  private enforcer = new YouTubeDomEnforcer();
+
   constructor(
-    private storage: StorageFacade,
     currentUrl: string,
     private onModeChange: () => void,
   ) {
-    const isShorts = currentUrl.includes('/shorts/');
-    this.id = isShorts ? 'youtube_shorts' : 'youtube_watch';
-    this.name = isShorts ? 'YouTube Shorts' : 'YouTube Watch';
+    this.id = getPlatformType(currentUrl);
+    this.name = this.id === 'youtube_shorts' ? 'YouTube Shorts' : 'YouTube Watch';
   }
 
   private startOrResumeWatchTimer(id: string) {
@@ -49,15 +40,13 @@ export class YouTubeAdapter implements PlatformAdapter {
 
     this.isWatching = true;
     this.watchTimer = window.setTimeout(() => {
-      const currentId = this.getVideoId(window.location.href);
-
+      const currentId = getVideoId(window.location.href);
       if (!document.hidden && currentId === id) {
         if (!this.countedVideos.has(id)) {
           this.countedVideos.add(id);
           if (this.callback) this.callback(id);
         }
       }
-
       this.isWatching = false;
       this.watchTimer = null;
     }, this.WATCH_THRESHOLD);
@@ -74,14 +63,13 @@ export class YouTubeAdapter implements PlatformAdapter {
   private handleVideoChange(id: string) {
     this.pendingVideoId = id;
     this.pauseWatchTimer();
-
     if (!document.hidden) {
       this.startOrResumeWatchTimer(id);
     }
   }
 
   public isCurrentPlatform(url: string): boolean {
-    return url.includes('youtube.com');
+    return isYouTubeUrl(url);
   }
 
   public observe(onItemChange: ItemChangeCallback): void {
@@ -92,25 +80,12 @@ export class YouTubeAdapter implements PlatformAdapter {
       if (document.hidden) {
         this.pauseWatchTimer();
       } else {
-        if (this.pendingVideoId && this.pendingVideoId === this.getVideoId(window.location.href)) {
+        if (this.pendingVideoId && this.pendingVideoId === getVideoId(window.location.href)) {
           this.startOrResumeWatchTimer(this.pendingVideoId);
         }
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
-
-    this.storageListener = (
-      changes: Record<string, import('../../core/storage/driver').StorageChange>,
-    ) => {
-      if (changes[`limitra_${this.id}_count`] || changes[`limitra_${this.id}_time_spent`]) {
-        void this.storage.isCurrentlyBlocked(this.id).then((isBlocked: boolean) => {
-          if (isBlocked) {
-            this.executePunishment();
-          }
-        });
-      }
-    };
-    this.storage.onChange(this.storageListener);
 
     this.observeUrlChanges();
   }
@@ -123,117 +98,40 @@ export class YouTubeAdapter implements PlatformAdapter {
       window.clearInterval(this.urlCheckInterval);
       this.urlCheckInterval = null;
     }
-
     if (this.ytNavigationHandler) {
       window.removeEventListener('yt-navigate-finish', this.ytNavigationHandler);
       this.ytNavigationHandler = null;
     }
-
     if (this.popstateHandler) {
       window.removeEventListener('popstate', this.popstateHandler);
       this.popstateHandler = null;
     }
-
     if (this.visibilityHandler) {
       document.removeEventListener('visibilitychange', this.visibilityHandler);
       this.visibilityHandler = null;
     }
 
-    if (this.storageListener) {
-      this.storage.removeListener(this.storageListener);
-      this.storageListener = null;
-    }
+    this.enforcer.stop();
 
-    if (this.punishmentObserver) {
-      this.punishmentObserver.disconnect();
-      this.punishmentObserver = null;
-    }
-
-    if (this.keydownHandler) {
-      window.removeEventListener('keydown', this.keydownHandler, true);
-      this.keydownHandler = null;
-    }
-
-    document.body.classList.remove('limitra-global-punishment');
     this.callback = null;
     this.pendingVideoId = null;
     this.lastVideoId = null;
   }
 
   public executePunishment(): void {
-    if (this.punishmentObserver) return;
-
-    document.body.classList.add('limitra-global-punishment');
-
-    const silenceVideos = () => {
-      const videos = document.querySelectorAll<HTMLVideoElement>('video');
-      videos.forEach((video) => {
-        if (!video.paused || !video.muted) {
-          video.muted = true;
-          video.pause();
-        }
-      });
-    };
-
-    silenceVideos();
-
-    let scheduled = false;
-
-    this.punishmentObserver = new MutationObserver(() => {
-      if (scheduled) return;
-      scheduled = true;
-
-      requestAnimationFrame(() => {
-        silenceVideos();
-        scheduled = false;
-      });
-    });
-
-    const appContainer = document.querySelector('ytd-app') || document.body;
-    this.punishmentObserver.observe(appContainer, {
-      childList: true,
-      subtree: true,
-    });
-
-    this.keydownHandler = (e: KeyboardEvent) => {
-      if (this.BLOCKED_KEYS.includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    };
-
-    window.addEventListener('keydown', this.keydownHandler, true);
-  }
-
-  // Unified ID extraction supporting both Shorts and Watch URLs
-  private getVideoId(url: string): string | null {
-    if (url.includes('/shorts/')) {
-      const match = url.match(/shorts\/([^?]+)/);
-      return match ? match[1] : null;
-    } else if (url.includes('/watch')) {
-      try {
-        const urlParams = new URLSearchParams(new URL(url).search);
-        return urlParams.get('v');
-      } catch {
-        return null;
-      }
-    }
-    return null;
+    this.enforcer.enforce();
   }
 
   private checkUrl() {
     const currentUrl = window.location.href;
-    const isShorts = currentUrl.includes('/shorts/');
-    const evaluatedMode: PlatformId = isShorts ? 'youtube_shorts' : 'youtube_watch';
+    const evaluatedMode = getPlatformType(currentUrl);
 
-    // TRIGGER HOT-SWAP: If the user navigated across platform boundaries
     if (evaluatedMode !== this.id) {
       this.onModeChange();
       return;
     }
 
-    const currentId = this.getVideoId(currentUrl);
-
+    const currentId = getVideoId(currentUrl);
     if (currentId !== this.lastVideoId) {
       this.lastVideoId = currentId;
       if (currentId) {
@@ -254,9 +152,8 @@ export class YouTubeAdapter implements PlatformAdapter {
 
     this.urlCheckInterval = window.setInterval(() => {
       this.checkUrl();
-
       if (!document.hidden && !this.isWatching && this.pendingVideoId) {
-        if (this.getVideoId(window.location.href) === this.pendingVideoId) {
+        if (getVideoId(window.location.href) === this.pendingVideoId) {
           this.startOrResumeWatchTimer(this.pendingVideoId);
         }
       }
