@@ -3,7 +3,7 @@ import { SettingsStorage } from './settings';
 import { StatsStorage } from './stats';
 import { SessionStorage } from './session';
 import { SecurityStorage } from './security';
-import { PlatformId } from '../../types';
+import { PlatformId, PLATFORMS_CONFIG } from '../../types';
 
 export class StorageFacade {
   public settings: SettingsStorage;
@@ -65,7 +65,7 @@ export class StorageFacade {
   }
 
   public async isAnyPlatformBlocked(): Promise<boolean> {
-    const platforms: PlatformId[] = ['youtube_shorts', 'youtube_watch', 'instagram', 'global'];
+    const platforms = Object.keys(PLATFORMS_CONFIG) as PlatformId[];
     for (const p of platforms) {
       if (await this.isCurrentlyBlocked(p)) return true;
     }
@@ -200,9 +200,7 @@ export class StorageFacade {
   }
 
   // Sessions
-  async ensureSession(
-    platforms: PlatformId[] = ['youtube_shorts', 'youtube_watch', 'instagram', 'global'],
-  ) {
+  async ensureSession(platforms: PlatformId[] = Object.keys(PLATFORMS_CONFIG) as PlatformId[]) {
     const wasReset = await this.session.ensureSession(platforms);
     if (wasReset) {
       for (const p of platforms) {
