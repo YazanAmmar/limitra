@@ -19,8 +19,14 @@ export class AppOrchestrator {
   private sessionManager!: SessionManager;
   private messenger!: Messenger;
   private tracker!: Tracker;
-
+  private limiter!: Limiter;
   private storageListener: ((changes: Record<string, StorageChange>) => void) | null = null;
+
+  private currentLimit: number = 0;
+  private isLimitEnabled: boolean = false;
+  private timeLimitMins: number = 0;
+  private isTimeEnabled: boolean = false;
+  private timeSpentMs: number = 0;
 
   constructor(
     adapter: PlatformAdapter,
@@ -36,57 +42,36 @@ export class AppOrchestrator {
 
   public async start() {
     initOverlayListeners();
+    await this.initializeState();
 
+    this.setupMessenger();
+    await this.setupSessionManager();
+    await this.setupLimiter();
+    this.setupStorageListener();
+
+    await this.runInitialChecks();
+    this.setupTracker();
+  }
+
+  private async initializeState() {
     const pId = this.activeAdapter.id;
+    this.currentLimit = await this.storage.getLimit(pId);
+    this.isLimitEnabled = await this.storage.getEnableLimit(pId);
+    this.timeLimitMins = await this.storage.getTimeLimit(pId);
+    this.isTimeEnabled = await this.storage.getEnableTime(pId);
+    this.timeSpentMs = await this.storage.getTimeSpent(pId);
+  }
 
-    const safeBlock = async (reason: string = 'time') => {
-      if (this.isBlocked) return;
-
-      const reallyBlocked = await this.storage.isCurrentlyBlocked(pId);
-      if (!reallyBlocked) return;
-
-      this.isBlocked = true;
-
-      let finalReason = reason;
-
-      if (reason !== 'bypass') {
-        const isLimitEnabled = await this.storage.getEnableLimit(pId);
-        const limit = await this.storage.getLimit(pId);
-        const count = await this.storage.getCount(pId);
-        const limitReached = isLimitEnabled && limit > 0 && count >= limit;
-
-        const isTimeEnabled = await this.storage.getEnableTime(pId);
-        const timeLimit = await this.storage.getTimeLimit(pId);
-        const timeSpent = await this.storage.getTimeSpent(pId);
-        const timeReached = isTimeEnabled && timeLimit > 0 && timeSpent >= timeLimit * 60 * 1000;
-
-        if (limitReached && timeReached) {
-          finalReason = 'both';
-        } else if (limitReached) {
-          finalReason = 'count';
-        } else if (timeReached) {
-          finalReason = 'time';
-        }
-      }
-
-      console.warn(`[Limitra] Initiating block logic. Reason: ${finalReason}`);
-      if (this.sessionManager) {
-        await this.sessionManager.blockSession();
-      }
-      this.activeAdapter.executePunishment();
-      await showOverlay(finalReason);
-    };
-
+  private setupMessenger() {
     this.messenger = new Messenger(
-      () => {
-        void safeBlock('time');
-      },
+      () => void this.evaluateAndEnforceBlock('time'),
       this.messageBus,
-      pId,
+      this.activeAdapter.id,
     );
-
     this.messenger.init();
+  }
 
+  private async setupSessionManager() {
     this.sessionManager = new SessionManager(
       this.messenger,
       this.activeAdapter,
@@ -94,76 +79,122 @@ export class AppOrchestrator {
       this.storage,
     );
     await this.sessionManager.init();
+  }
 
-    let limit = await this.storage.getLimit(pId);
-    const initialCount = await this.storage.getCount(pId);
-    let isLimitEnabled = await this.storage.getEnableLimit(pId);
-
-    let timeLimitMins = await this.storage.getTimeLimit(pId);
-    let timeSpentMs = await this.storage.getTimeSpent(pId);
-    let isTimeEnabled = await this.storage.getEnableTime(pId);
-
-    const limiter = new Limiter(
-      { limit: isLimitEnabled ? limit : 0 },
+  private async setupLimiter() {
+    const pId = this.activeAdapter.id;
+    this.limiter = new Limiter(
+      { limit: this.isLimitEnabled ? this.currentLimit : 0 },
       {
         onWarning: (count) => console.warn('Warning at', count),
         onBlock: () => {
-          if (limiter.getLimit() > 0) void safeBlock('count');
+          if (this.limiter.getLimit() > 0) void this.evaluateAndEnforceBlock('count');
         },
       },
     );
-    limiter.setInitialCount(initialCount);
+    const initialCount = await this.storage.getCount(pId);
+    this.limiter.setInitialCount(initialCount);
+  }
 
+  private async evaluateAndEnforceBlock(reason: string = 'time') {
+    if (this.isBlocked) return;
+    const pId = this.activeAdapter.id;
+
+    const reallyBlocked = await this.storage.isCurrentlyBlocked(pId);
+    if (!reallyBlocked) return;
+
+    this.isBlocked = true;
+    let finalReason = reason;
+
+    if (reason !== 'bypass') {
+      const count = await this.storage.getCount(pId);
+      const limitReached =
+        this.isLimitEnabled && this.currentLimit > 0 && count >= this.currentLimit;
+      const timeReached =
+        this.isTimeEnabled &&
+        this.timeLimitMins > 0 &&
+        this.timeSpentMs >= this.timeLimitMins * 60 * 1000;
+
+      if (limitReached && timeReached) {
+        finalReason = 'both';
+      } else if (limitReached) {
+        finalReason = 'count';
+      } else if (timeReached) {
+        finalReason = 'time';
+      }
+    }
+
+    console.warn(`[Limitra] Initiating block logic. Reason: ${finalReason}`);
+    if (this.sessionManager) {
+      await this.sessionManager.blockSession();
+    }
+    this.activeAdapter.executePunishment();
+    await showOverlay(finalReason);
+  }
+
+  private setupStorageListener() {
+    const pId = this.activeAdapter.id;
     this.storageListener = (changes: Record<string, StorageChange>) => {
       if (changes[`limitra_${pId}_limit`] || changes[`limitra_${pId}_enable_limit`]) {
-        if (changes[`limitra_${pId}_limit`]) {
-          limit = Number(changes[`limitra_${pId}_limit`].newValue) || 0;
-        }
-        if (changes[`limitra_${pId}_enable_limit`]) {
-          isLimitEnabled = Boolean(changes[`limitra_${pId}_enable_limit`].newValue);
-        }
-        limiter.setLimit(isLimitEnabled ? limit : 0);
+        if (changes[`limitra_${pId}_limit`])
+          this.currentLimit = Number(changes[`limitra_${pId}_limit`].newValue) || 0;
+        if (changes[`limitra_${pId}_enable_limit`])
+          this.isLimitEnabled = Boolean(changes[`limitra_${pId}_enable_limit`].newValue);
+        this.limiter.setLimit(this.isLimitEnabled ? this.currentLimit : 0);
       }
 
       if (changes[`limitra_${pId}_count`]) {
         const newVal = Number(changes[`limitra_${pId}_count`].newValue) || 0;
-        limiter.setInitialCount(newVal);
-        if (isLimitEnabled && limit > 0 && newVal >= limit) {
-          void safeBlock('count');
+        this.limiter.setInitialCount(newVal);
+        if (this.isLimitEnabled && this.currentLimit > 0 && newVal >= this.currentLimit) {
+          void this.evaluateAndEnforceBlock('count');
         }
       }
 
-      if (changes[`limitra_${pId}_time_limit`] || changes[`limitra_${pId}_enable_time`]) {
-        if (changes[`limitra_${pId}_time_limit`]) {
-          timeLimitMins = Number(changes[`limitra_${pId}_time_limit`].newValue) || 0;
-        }
-        if (changes[`limitra_${pId}_enable_time`]) {
-          isTimeEnabled = Boolean(changes[`limitra_${pId}_enable_time`].newValue);
-        }
-        if (isTimeEnabled && timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) {
-          void safeBlock('time');
-        }
-      }
+      if (
+        changes[`limitra_${pId}_time_limit`] ||
+        changes[`limitra_${pId}_enable_time`] ||
+        changes[`limitra_${pId}_time_spent`]
+      ) {
+        if (changes[`limitra_${pId}_time_limit`])
+          this.timeLimitMins = Number(changes[`limitra_${pId}_time_limit`].newValue) || 0;
+        if (changes[`limitra_${pId}_enable_time`])
+          this.isTimeEnabled = Boolean(changes[`limitra_${pId}_enable_time`].newValue);
+        if (changes[`limitra_${pId}_time_spent`])
+          this.timeSpentMs = Number(changes[`limitra_${pId}_time_spent`].newValue) || 0;
 
-      if (changes[`limitra_${pId}_time_spent`]) {
-        timeSpentMs = Number(changes[`limitra_${pId}_time_spent`].newValue) || 0;
-        if (isTimeEnabled && timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) {
-          void safeBlock('time');
+        if (
+          this.isTimeEnabled &&
+          this.timeLimitMins > 0 &&
+          this.timeSpentMs >= this.timeLimitMins * 60 * 1000
+        ) {
+          void this.evaluateAndEnforceBlock('time');
         }
       }
     };
-
     this.storage.onChange(this.storageListener);
+  }
 
+  private async runInitialChecks() {
+    const pId = this.activeAdapter.id;
     const bypassed = await this.storage.detectBypass(pId);
-    if (bypassed) {
-      await safeBlock('bypass');
-    } else if (isLimitEnabled && initialCount >= limit && limit > 0) {
-      await safeBlock('count');
-    } else if (isTimeEnabled && timeLimitMins > 0 && timeSpentMs >= timeLimitMins * 60 * 1000) {
-      await safeBlock('time');
-    }
+    const count = await this.storage.getCount(pId);
 
+    if (bypassed) {
+      await this.evaluateAndEnforceBlock('bypass');
+    } else if (this.isLimitEnabled && count >= this.currentLimit && this.currentLimit > 0) {
+      await this.evaluateAndEnforceBlock('count');
+    } else if (
+      this.isTimeEnabled &&
+      this.timeLimitMins > 0 &&
+      this.timeSpentMs >= this.timeLimitMins * 60 * 1000
+    ) {
+      await this.evaluateAndEnforceBlock('time');
+    }
+  }
+
+  private setupTracker() {
+    const pId = this.activeAdapter.id;
     this.tracker = new Tracker(async () => {
       if (this.isBlocked) {
         const overlay = document.getElementById('limitra-overlay');
@@ -182,8 +213,7 @@ export class AppOrchestrator {
         }
         return;
       }
-
-      if (isLimitEnabled && limit > 0) {
+      if (this.isLimitEnabled && this.currentLimit > 0) {
         await this.storage.incrementCount(pId);
       }
     });
@@ -196,18 +226,10 @@ export class AppOrchestrator {
       this.storage.removeListener(this.storageListener);
       this.storageListener = null;
     }
-    if (this.messenger) {
-      this.messenger.destroy();
-    }
-    if (this.activeAdapter) {
-      this.activeAdapter.disconnect();
-    }
-    if (this.sessionManager) {
-      this.sessionManager.destroy();
-    }
-    if (this.tracker) {
-      this.tracker.destroy();
-    }
+    if (this.messenger) this.messenger.destroy();
+    if (this.activeAdapter) this.activeAdapter.disconnect();
+    if (this.sessionManager) this.sessionManager.destroy();
+    if (this.tracker) this.tracker.destroy();
 
     const overlay = document.getElementById('limitra-overlay');
     if (overlay) overlay.remove();
