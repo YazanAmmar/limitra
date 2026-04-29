@@ -5,7 +5,7 @@
   "description": "If willpower worked, you wouldn't be here. Set hard limits. Limitra enforces them.",
   "default_locale": "en",
   "permissions": ["storage", "activeTab", "scripting", "alarms"],
-  "host_permissions": ["*://*.youtube.com/*"],
+  "host_permissions": ["*://*.youtube.com/*", "*://*.instagram.com/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -31,7 +31,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
+      "matches": ["*://*.youtube.com/*", "*://*.instagram.com/*"],
       "js": ["content.js"],
       "css": ["styles.css"]
     }

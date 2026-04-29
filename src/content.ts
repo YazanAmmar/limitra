@@ -1,4 +1,5 @@
 import { YouTubeAdapter } from './platforms/youtube/adapter';
+import { InstagramAdapter } from './platforms/instagram/adapter';
 import { AppOrchestrator } from './app/orchestrator';
 import { ChromeMessageBus } from './adapters/chrome/message-bus';
 import { ChromeConnectionManager } from './adapters/chrome/connection-manager';
@@ -46,6 +47,9 @@ if (!window.__LIMITRA_INJECTED__) {
 
         const adapters = [
           new YouTubeAdapter(currentUrl, () => {
+            void bootstrap();
+          }),
+          new InstagramAdapter(currentUrl, () => {
             void bootstrap();
           }),
         ];

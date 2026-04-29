@@ -21,6 +21,8 @@ export interface LocaleStrings {
     selectPlatform: string;
     youtubeShorts: string;
     youtubeWatch: string;
+    instagramReels: string;
+    instagramFeed: string;
   };
   dashboard: {
     title: string;

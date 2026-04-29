@@ -3,6 +3,14 @@ import { ChromeStorageDriver } from '../../adapters/chrome/storage-driver';
 import { i18n } from '../../i18n/index';
 import { PlatformId } from '../../types';
 import { initCustomSelects } from '../components/custom-select';
+import {
+  isYouTubeUrl,
+  getPlatformType as getYoutubePlatform,
+} from '../../platforms/youtube/parser';
+import {
+  isInstagramUrl,
+  getPlatformType as getInstagramPlatform,
+} from '../../platforms/instagram/parser';
 
 const storageDriver = new ChromeStorageDriver();
 const storage = new StorageFacade(storageDriver);
@@ -47,6 +55,12 @@ function updateUITexts() {
 
   const ytWatchOption = platformSelector.querySelector('option[value="youtube_watch"]');
   if (ytWatchOption) ytWatchOption.textContent = t.popup.youtubeWatch;
+
+  const igReelsOption = platformSelector.querySelector('option[value="instagram_reels"]');
+  if (igReelsOption) igReelsOption.textContent = t.popup.instagramReels;
+
+  const igFeedOption = platformSelector.querySelector('option[value="instagram_feed"]');
+  if (igFeedOption) igFeedOption.textContent = t.popup.instagramFeed;
 
   const placeholderOption = platformSelector.querySelector('option[value=""]');
   if (placeholderOption) placeholderOption.textContent = t.popup.selectPlatform;
@@ -196,8 +210,12 @@ async function init() {
   const currentTab = tabs[0];
   const currentUrl = currentTab?.url || '';
 
-  if (currentUrl.includes('youtube.com')) {
-    activePlatform = currentUrl.includes('/shorts/') ? 'youtube_shorts' : 'youtube_watch';
+  if (isYouTubeUrl(currentUrl)) {
+    activePlatform = getYoutubePlatform(currentUrl);
+    platformSelector.value = activePlatform;
+    await loadPlatformData();
+  } else if (isInstagramUrl(currentUrl)) {
+    activePlatform = getInstagramPlatform(currentUrl);
     platformSelector.value = activePlatform;
     await loadPlatformData();
   } else {

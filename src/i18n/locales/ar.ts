@@ -21,6 +21,8 @@ const ar: LocaleStrings = {
     selectPlatform: 'اختر المنصة...',
     youtubeShorts: 'يوتيوب شورتس',
     youtubeWatch: 'يوتيوب العادي',
+    instagramReels: 'إنستغرام ريلز',
+    instagramFeed: 'إنستغرام تصفُّح',
   },
   dashboard: {
     title: 'مركز قيادة ليمترا',

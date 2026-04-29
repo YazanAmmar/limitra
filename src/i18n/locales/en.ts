@@ -21,6 +21,8 @@ const en: LocaleStrings = {
     selectPlatform: 'Select Platform...',
     youtubeShorts: 'YouTube Shorts',
     youtubeWatch: 'YouTube Watch',
+    instagramReels: 'Instagram Reels',
+    instagramFeed: 'Instagram Feed',
   },
   dashboard: {
     title: 'Limitra Command Center',

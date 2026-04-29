@@ -1,9 +1,15 @@
-export type PlatformId = 'youtube_shorts' | 'youtube_watch' | 'instagram' | 'global';
+export type PlatformId =
+  | 'youtube_shorts'
+  | 'youtube_watch'
+  | 'instagram_reels'
+  | 'instagram_feed'
+  | 'global';
 
 export const PLATFORMS_CONFIG: Record<PlatformId, { urlPatterns: string[] }> = {
   youtube_shorts: { urlPatterns: ['*://*.youtube.com/*'] },
   youtube_watch: { urlPatterns: ['*://*.youtube.com/*'] },
-  instagram: { urlPatterns: ['*://*.instagram.com/*'] },
+  instagram_reels: { urlPatterns: ['*://*.instagram.com/*'] },
+  instagram_feed: { urlPatterns: ['*://*.instagram.com/*'] },
   global: { urlPatterns: ['<all_urls>'] },
 };
 
