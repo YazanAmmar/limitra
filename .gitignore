@@ -15,6 +15,6 @@ dist/
 .env.*
 *.bak
 
-main.js
+/main.js
 
 docs/tailwind.css
