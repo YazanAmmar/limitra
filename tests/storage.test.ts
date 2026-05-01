@@ -37,7 +37,7 @@ describe('Scoped Storage Architecture (Multi-Platform Isolation)', () => {
   });
 
   const YT: PlatformId = 'youtube_shorts';
-  const IG: PlatformId = 'instagram';
+  const IG: PlatformId = 'instagram_reels';
 
   describe('Data Isolation (Data Leak Prevention)', () => {
     it('should set and get limits completely independently per platform', async () => {
