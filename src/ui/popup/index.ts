@@ -11,9 +11,12 @@ import {
   isInstagramUrl,
   getPlatformType as getInstagramPlatform,
 } from '../../platforms/instagram/parser';
+import { IndexedDbAnalyticsRepository } from '../../adapters/browser/indexeddb-analytics';
 
 const storageDriver = new ChromeStorageDriver();
 const storage = new StorageFacade(storageDriver);
+
+storage.setAnalyticsRepository(new IndexedDbAnalyticsRepository());
 
 const limitInput = document.getElementById('limit') as HTMLInputElement;
 const timeInput = document.getElementById('timeLimit') as HTMLInputElement;
@@ -32,6 +35,7 @@ let currentConsumedCount = 0;
 let currentConsumedTimeMs = 0;
 let clickCount = 0;
 let spamResetTimer: number | null = null;
+let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
 function setText(id: string, value: string) {
   const el = document.getElementById(id);
@@ -176,16 +180,18 @@ function lockUIForSelection() {
 
 async function loadPlatformData() {
   if (!activePlatform) return;
-  const [limit, timeLimit, isLimitEnabled, isTimeEnabled, isBlocked, count, timeSpentMs] =
-    await Promise.all([
-      storage.getLimit(activePlatform),
-      storage.getTimeLimit(activePlatform),
-      storage.getEnableLimit(activePlatform),
-      storage.getEnableTime(activePlatform),
-      storage.isCurrentlyBlocked(activePlatform),
-      storage.getCount(activePlatform),
-      storage.getTimeSpent(activePlatform),
-    ]);
+  const [limit, timeLimit, isLimitEnabled, isTimeEnabled, isBlocked, count] = await Promise.all([
+    storage.getLimit(activePlatform),
+    storage.getTimeLimit(activePlatform),
+    storage.getEnableLimit(activePlatform),
+    storage.getEnableTime(activePlatform),
+    storage.isCurrentlyBlocked(activePlatform),
+    storage.getCount(activePlatform),
+  ]);
+
+  const timeSpentMs = storage.analyticsService
+    ? await storage.analyticsService.getTodayUsage(activePlatform)
+    : await storage.getTimeSpent(activePlatform);
 
   currentConsumedCount = count;
   currentConsumedTimeMs = timeSpentMs;
@@ -233,6 +239,20 @@ async function init() {
 
   limitInput.addEventListener('input', updateProgressBar);
   timeInput.addEventListener('input', updateProgressBar);
+
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+  }
+
+  pollingInterval = setInterval(async () => {
+    if (activePlatform && storage.analyticsService) {
+      const freshTimeMs = await storage.analyticsService.getTodayUsage(activePlatform);
+      if (freshTimeMs !== currentConsumedTimeMs) {
+        currentConsumedTimeMs = freshTimeMs;
+        updateProgressBar();
+      }
+    }
+  }, 2000);
 }
 
 function applyTheme(theme: string) {
@@ -349,11 +369,6 @@ chrome.storage.onChanged.addListener((changes) => {
     needsUpdate = true;
     checkLock = true;
   }
-  if (changes[`limitra_${activePlatform}_time_spent`]) {
-    currentConsumedTimeMs = Number(changes[`limitra_${activePlatform}_time_spent`].newValue) || 0;
-    needsUpdate = true;
-    checkLock = true;
-  }
   if (changes['limitra_theme']) {
     applyTheme(changes['limitra_theme'].newValue as string);
   }
@@ -382,7 +397,11 @@ chrome.storage.onChanged.addListener((changes) => {
 
     const isBlocked = await storage.isCurrentlyBlocked(activePlatform);
     const count = await storage.getCount(activePlatform);
-    const timeSpentMs = await storage.getTimeSpent(activePlatform);
+
+    const timeSpentMs = storage.analyticsService
+      ? await storage.analyticsService.getTodayUsage(activePlatform)
+      : await storage.getTimeSpent(activePlatform);
+
     const hasConsumed = count > 0 || Math.floor(timeSpentMs / (60 * 1000)) > 0;
 
     if (isBlocked || hasConsumed) {

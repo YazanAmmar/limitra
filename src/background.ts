@@ -5,12 +5,15 @@ import { ChromeAlarmManager } from './adapters/chrome/alarm-manager';
 import { ChromeTabManager } from './adapters/chrome/tab-manager';
 import { ChromeMessageBus } from './adapters/chrome/message-bus';
 import { BackgroundOrchestrator } from './core/background-orchestrator';
+import { IndexedDbAnalyticsRepository } from './adapters/browser/indexeddb-analytics';
 
 const alarmManager = new ChromeAlarmManager();
 const tabManager = new ChromeTabManager();
 const messageBus = new ChromeMessageBus();
 const storageDriver = new ChromeStorageDriver();
 const storage = new StorageFacade(storageDriver);
+
+storage.setAnalyticsRepository(new IndexedDbAnalyticsRepository());
 
 const orchestrator = new BackgroundOrchestrator(alarmManager, tabManager, messageBus, storage);
 orchestrator.init();
@@ -79,6 +82,20 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       }
     } catch (error) {
       console.error('[Limitra] Failed to inject scripts on install:', error);
+    }
+  }
+});
+
+const GC_ALARM_NAME = 'limitra_analytics_gc';
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await chrome.alarms.create(GC_ALARM_NAME, { periodInMinutes: 1440 });
+});
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === GC_ALARM_NAME) {
+    if (storage.analyticsService) {
+      await storage.analyticsService.performGarbageCollection(7);
     }
   }
 });

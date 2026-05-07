@@ -4,12 +4,15 @@ import { StatsStorage } from './stats';
 import { SessionStorage } from './session';
 import { SecurityStorage } from './security';
 import { PlatformId, PLATFORMS_CONFIG } from '../../types';
+import { AnalyticsRepository } from '../interfaces/analytics-repository';
+import { AnalyticsService } from '../analytics/service';
 
 export class StorageFacade {
   public settings: SettingsStorage;
   public stats: StatsStorage;
   public session: SessionStorage;
   public security: SecurityStorage;
+  public analyticsService?: AnalyticsService;
 
   constructor(public driver: StorageDriver) {
     this.settings = new SettingsStorage(this.driver);
@@ -197,6 +200,12 @@ export class StorageFacade {
   }
   async addTime(platform: PlatformId, ms: number) {
     return this.stats.addTime(platform, ms);
+  }
+
+  // Analytics & Dependencies
+  public setAnalyticsRepository(repo: AnalyticsRepository): void {
+    this.session.setAnalyticsRepository(repo);
+    this.analyticsService = new AnalyticsService(repo);
   }
 
   // Sessions
