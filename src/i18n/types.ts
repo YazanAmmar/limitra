@@ -77,6 +77,12 @@ export interface LocaleStrings {
     condAnd: string;
     descCondOr: string;
     descCondAnd: string;
+    analyticsTitle: string;
+    statToday: string;
+    statSessions: string;
+    statTrend: string;
+    hoursShort: string;
+    minutesShort: string;
   };
   tones: {
     random: string;

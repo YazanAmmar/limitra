@@ -78,6 +78,12 @@ const ar: LocaleStrings = {
     condAnd: 'مرن (و)',
     descCondOr: 'تفعيل الحظر بمجرد انتهاء أي عداد (الوقت أو الفيديوهات).',
     descCondAnd: 'تفعيل الحظر فقط عند انتهاء كلا العدادين معاً.',
+    analyticsTitle: 'إحصائيات المنصة',
+    statToday: 'استخدام اليوم',
+    statSessions: 'جلسات اليوم',
+    statTrend: 'مقارنة بالأمس',
+    hoursShort: 'س',
+    minutesShort: 'د',
   },
   tones: {
     random: 'عشوائي',

@@ -94,6 +94,12 @@ function updateUITexts() {
     'desc-dash-reset': t.dashboard.resetDesc,
     'btn-reset-settings': t.dashboard.resetBtn,
 
+    // Analytics
+    'group-analytics-title': t.dashboard.analyticsTitle,
+    'lbl-stat-today': t.dashboard.statToday,
+    'lbl-stat-sessions': t.dashboard.statSessions,
+    'lbl-stat-trend': t.dashboard.statTrend,
+
     // CTA
     'btn-sponsor-text': t.dashboard.btnSponsor,
 
@@ -106,6 +112,24 @@ function updateUITexts() {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   });
+
+  const platformMap: Record<string, string> = {
+    youtube_shorts: t.popup.youtubeShorts,
+    youtube_watch: t.popup.youtubeWatch,
+    instagram_reels: t.popup.instagramReels,
+    instagram_feed: t.popup.instagramFeed,
+  };
+
+  const platformSelect = document.getElementById(
+    'analytics-platform-selector',
+  ) as HTMLSelectElement;
+  if (platformSelect) {
+    Array.from(platformSelect.options).forEach((option) => {
+      if (platformMap[option.value]) {
+        option.textContent = platformMap[option.value];
+      }
+    });
+  }
 
   document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
 }

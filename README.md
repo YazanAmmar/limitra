@@ -152,34 +152,28 @@ Configure your limits, tracking mode, block condition, block duration, theme, an
 
 ```text
 src/
-├── adapters/                 # Chrome-specific implementations (Composition Layer)
-│   └── chrome/
-│       ├── alarm-manager.ts
-│       ├── connection-manager.ts
-│       ├── message-bus.ts
-│       ├── storage-driver.ts
-│       └── tab-manager.ts
+├── adapters/                 # Environment-specific implementations (Composition Layer)
+│   ├── browser/              # Browser-agnostic web APIs (e.g., IndexedDB)
+│   └── chrome/               # Chrome-specific extension APIs
 ├── app/
 │   └── orchestrator.ts       # Wires core components, owns the content-side block flow
 ├── core/
+│   ├── analytics/            # Continuous tracking, aggregators, formatters, and reports
 │   ├── interfaces/           # Abstract contracts (Ports) - no platform dependencies
-│   │   ├── alarm-manager.ts
-│   │   ├── connection-manager.ts
-│   │   ├── message-bus.ts
-│   │   ├── platform-adapter.ts
-│   │   └── tab-manager.ts
 │   ├── storage/              # Persistence layer - settings, stats, sessions, security
+│   ├── subscription/         # Centralized policy engine (plans, capabilities, limits)
 │   ├── background-orchestrator.ts # Environment-agnostic background logic
 │   ├── limiter.ts            # Pure counting and limit enforcement logic
 │   ├── session.ts            # Heartbeat, activity tracking, and unload handling
 │   ├── tracker.ts            # Delegates URL observation to the active adapter
 │   └── messenger.ts          # Typed message bus wrapper
 ├── platforms/
-│   ├── youtube/index.ts      # YouTube Shorts + Watch adapter (with hot-swap support)
-│   └── generic/index.ts      # Fallback adapter
+│   ├── instagram/            # Instagram specific parsers and enforcers
+│   ├── youtube/              # YouTube specific parsers and enforcers
+│   └── generic/              # Fallback adapter
 ├── ui/
 │   ├── popup/                # Extension popup UI
-│   ├── settings/             # Command Center dashboard
+│   ├── settings/             # Command Center dashboard & analytics
 │   ├── overlay/              # Blocking screen (renderer, controller, persistence)
 │   └── components/           # Reusable UI components (tooltip, modal, custom-select)
 ├── i18n/                     # Internationalization (types, singleton, locale files)

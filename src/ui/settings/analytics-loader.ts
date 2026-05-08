@@ -1,5 +1,6 @@
 import { StorageFacade } from '../../core/storage/index';
 import { PlatformId } from '../../types';
+import { i18n } from '../../i18n/index';
 
 export class AnalyticsLoader {
   constructor(private storage: StorageFacade) {}
@@ -14,7 +15,10 @@ export class AnalyticsLoader {
       return;
     }
 
-    const translations = { hours: 'h', minutes: 'm' };
+    const translations = {
+      hours: i18n.t.dashboard.hoursShort,
+      minutes: i18n.t.dashboard.minutesShort,
+    };
 
     const report = await this.storage.analyticsService.getDashboardReport(platformId, translations);
 

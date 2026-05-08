@@ -80,6 +80,12 @@ const en: LocaleStrings = {
     condAnd: 'Flexible (AND)',
     descCondOr: 'Block as soon as ANY limit (Time or Videos) is reached.',
     descCondAnd: 'Block ONLY when BOTH limits (Time and Videos) are reached.',
+    analyticsTitle: 'Platform Analytics',
+    statToday: "Today's Usage",
+    statSessions: 'Sessions Today',
+    statTrend: 'Vs Yesterday',
+    hoursShort: 'h',
+    minutesShort: 'm',
   },
   tones: {
     random: 'Random',
