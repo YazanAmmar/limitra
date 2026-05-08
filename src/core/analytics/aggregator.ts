@@ -34,4 +34,12 @@ export class AnalyticsAggregator {
     }
     return grouped;
   }
+
+  /**
+   * Abstracting the session calculation logic to protect us in case
+   * the definition of a session changes in the future
+   */
+  public static calculateSessionCount(records: AnalyticsRecord[]): number {
+    return records.length;
+  }
 }

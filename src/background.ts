@@ -1,11 +1,12 @@
 import { StorageFacade } from './core/storage/index';
 import { ChromeStorageDriver } from './adapters/chrome/storage-driver';
-import { PlatformId, PLATFORMS_CONFIG } from './types';
+import { PlatformId, PLATFORMS_CONFIG, AppAction } from './types';
 import { ChromeAlarmManager } from './adapters/chrome/alarm-manager';
 import { ChromeTabManager } from './adapters/chrome/tab-manager';
 import { ChromeMessageBus } from './adapters/chrome/message-bus';
 import { BackgroundOrchestrator } from './core/background-orchestrator';
 import { IndexedDbAnalyticsRepository } from './adapters/browser/indexeddb-analytics';
+import { AnalyticsRecord } from './core/analytics/types';
 
 const alarmManager = new ChromeAlarmManager();
 const tabManager = new ChromeTabManager();
@@ -95,7 +96,15 @@ chrome.runtime.onInstalled.addListener(async () => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === GC_ALARM_NAME) {
     if (storage.analyticsService) {
-      await storage.analyticsService.performGarbageCollection(7);
+      await storage.analyticsService.performGarbageCollection();
+    }
+  }
+});
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === AppAction.SAVE_ANALYTICS && message.record) {
+    if (storage.analyticsService) {
+      void storage.analyticsService.saveRecord(message.record as AnalyticsRecord);
     }
   }
 });

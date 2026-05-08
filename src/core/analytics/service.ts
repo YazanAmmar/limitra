@@ -1,8 +1,19 @@
-import { AnalyticsRepository } from '../interfaces/analytics-repository';
 import { AnalyticsAggregator } from './aggregator';
+import { AnalyticsRepository } from '../interfaces/analytics-repository';
+import { SubscriptionService } from '../subscription/service';
+import { LimitType } from '../subscription/limits';
+import { DashboardReportGenerator } from './reports/dashboard-report';
+import { TimeTranslations } from './formatter';
 
 export class AnalyticsService {
-  constructor(private repo: AnalyticsRepository) {}
+  private dashboardReport: DashboardReportGenerator;
+
+  constructor(
+    private repo: AnalyticsRepository,
+    private subscriptionService: SubscriptionService,
+  ) {
+    this.dashboardReport = new DashboardReportGenerator(this.repo);
+  }
 
   /**
    * Retrieves the total usage time for the current day
@@ -81,7 +92,9 @@ export class AnalyticsService {
    * Removes old analytics data to save storage space (Garbage Collection).
    * By default, records older than 7 days will be deleted.
    */
-  public async performGarbageCollection(retentionDays: number = 7): Promise<void> {
+  public async performGarbageCollection(): Promise<void> {
+    const retentionDays = this.subscriptionService.getLimit(LimitType.ANALYTICS_RETENTION_DAYS);
+
     const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
 
     await this.repo.clearRecordsOlderThan(cutoffTime);
@@ -89,5 +102,16 @@ export class AnalyticsService {
     console.info(
       `[Limitra Analytics] Garbage collection completed. Cleared records older than ${retentionDays} days.`,
     );
+  }
+
+  /**
+   * Delegate dashboard report generation to the reporting layer
+   */
+  public async getDashboardReport(platformId: string, translations: TimeTranslations) {
+    return this.dashboardReport.generate(platformId, translations);
+  }
+
+  public async saveRecord(record: import('./types').AnalyticsRecord): Promise<void> {
+    return this.repo.saveRecord(record);
   }
 }

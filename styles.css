@@ -10,6 +10,9 @@
   --limitra-accent: #7c3aed;
   --text-on-accent: #ffffff;
   --grid-color: rgba(0, 0, 0, 0.04);
+
+  --color-success: #10b981;
+  --color-danger: #ef4444;
 }
 
 /* --- Dark Mode Palette --- */
@@ -1219,4 +1222,44 @@ select.brutal-select-hidden {
 .limitra-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(-10px);
+}
+
+/* --- Analytics Dashboard --- */
+
+.analytics-header-row {
+  margin-bottom: 20px;
+}
+
+.analytics-header-row .setting-group-title {
+  margin-bottom: 0;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 24px;
+  justify-content: center;
+}
+
+.stat-title {
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+.text-danger {
+  color: var(--color-danger);
 }

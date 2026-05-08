@@ -6,6 +6,7 @@ import { SecurityStorage } from './security';
 import { PlatformId, PLATFORMS_CONFIG } from '../../types';
 import { AnalyticsRepository } from '../interfaces/analytics-repository';
 import { AnalyticsService } from '../analytics/service';
+import { SubscriptionService } from '../subscription/service';
 
 export class StorageFacade {
   public settings: SettingsStorage;
@@ -13,12 +14,14 @@ export class StorageFacade {
   public session: SessionStorage;
   public security: SecurityStorage;
   public analyticsService?: AnalyticsService;
+  public subscriptionService: SubscriptionService;
 
   constructor(public driver: StorageDriver) {
     this.settings = new SettingsStorage(this.driver);
     this.stats = new StatsStorage(this.driver);
     this.session = new SessionStorage(this.driver, this.stats);
     this.security = new SecurityStorage(this.driver, this.stats);
+    this.subscriptionService = new SubscriptionService();
   }
 
   /**
@@ -205,7 +208,7 @@ export class StorageFacade {
   // Analytics & Dependencies
   public setAnalyticsRepository(repo: AnalyticsRepository): void {
     this.session.setAnalyticsRepository(repo);
-    this.analyticsService = new AnalyticsService(repo);
+    this.analyticsService = new AnalyticsService(repo, this.subscriptionService);
   }
 
   // Sessions
@@ -225,6 +228,9 @@ export class StorageFacade {
   }
   async getNextResetTime() {
     return this.session.getNextResetTime();
+  }
+  async updateSessionTime(platform: PlatformId) {
+    return this.session.updateSessionTime(platform);
   }
 
   // Security

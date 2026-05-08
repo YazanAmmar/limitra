@@ -192,8 +192,37 @@
         </div>
 
         <!-- Analytics -->
-        <div class="tab-content dashboard-card tab-placeholder" id="content-analytics">
-          <div class="badge-soon" id="badge-analytics-soon">Coming Soon</div>
+        <div class="tab-content" id="content-analytics">
+          <div class="settings-wrapper">
+            <div class="setting-group">
+              <div class="form-header-row analytics-header-row">
+                <h4 class="setting-group-title" id="group-analytics-title">Platform Analytics</h4>
+                <select id="analytics-platform-selector" class="brutal-select">
+                  <option value="youtube_shorts">YouTube Shorts</option>
+                  <option value="youtube_watch">YouTube Watch</option>
+                  <option value="instagram_reels">Instagram Reels</option>
+                  <option value="instagram_feed">Instagram Feed</option>
+                </select>
+              </div>
+
+              <div class="analytics-grid">
+                <div class="setting-card stat-card">
+                  <h5 class="setting-title stat-title" id="lbl-stat-today">Today's Usage</h5>
+                  <div id="stat-today-time" class="stat-value">--</div>
+                </div>
+
+                <div class="setting-card stat-card">
+                  <h5 class="setting-title stat-title" id="lbl-stat-sessions">Sessions Today</h5>
+                  <div id="stat-sessions" class="stat-value">--</div>
+                </div>
+
+                <div class="setting-card stat-card">
+                  <h5 class="setting-title stat-title" id="lbl-stat-trend">Vs Yesterday</h5>
+                  <div id="stat-trend" class="stat-value">--</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- AI Assistant -->

@@ -89,8 +89,7 @@ export class SessionStorage {
             })
             .catch(() => {});
         }
-      }, 60000);
-
+      }, 5000);
       this.activeSessions.get(platform)!.interval = interval;
     }
   }
@@ -98,12 +97,11 @@ export class SessionStorage {
   async endSession(platform: PlatformId): Promise<number> {
     const key = `limitra_${platform}_last_active`;
     const last = await this.driver.get<number>(key);
-
     const activeSession = this.activeSessions.get(platform);
+
     if (activeSession) {
       if (activeSession.interval) clearInterval(activeSession.interval);
-
-      if (this.analyticsRepo && last && last !== 0) {
+      if (this.analyticsRepo) {
         const currentTime = Date.now();
         await this.analyticsRepo
           .saveRecord({
@@ -123,6 +121,7 @@ export class SessionStorage {
     const delta = Date.now() - last;
     await this.stats.addTime(platform, delta);
     await this.driver.set<number>(key, 0);
+
     return delta;
   }
 
@@ -133,5 +132,17 @@ export class SessionStorage {
     const lastReset = (await this.driver.get<number>(LAST_RESET_KEY)) || Date.now();
     const intervalMs = await this.getDurationMs();
     return lastReset + intervalMs;
+  }
+
+  async updateSessionTime(platform: PlatformId): Promise<void> {
+    const key = `limitra_${platform}_last_active`;
+    const last = await this.driver.get<number>(key);
+    if (!last || last === 0) return;
+
+    const now = Date.now();
+    const delta = now - last;
+
+    await this.stats.addTime(platform, delta);
+    await this.driver.set<number>(key, now);
   }
 }

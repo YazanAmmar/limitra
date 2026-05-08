@@ -8,7 +8,6 @@ export class SessionManager {
   private adapter: PlatformAdapter;
   private lastActivityTime = Date.now();
   private lastHeartbeat = Date.now();
-  private lastSyncTime = Date.now();
   private isTracking = false;
   private isBlocked = false;
   private heartbeatId: ReturnType<typeof window.setInterval> | null = null;
@@ -84,27 +83,14 @@ export class SessionManager {
 
       if (now - this.lastHeartbeat > 5000 && this.isTracking) {
         console.warn('[Limitra] Sleep detected. Erasing time gap.');
-        await this.storage.startSession(this.adapter.id);
         this.lastHeartbeat = now;
-        this.lastSyncTime = now;
         return;
       }
 
       this.lastHeartbeat = now;
 
-      if (this.isTracking && now - this.lastSyncTime >= 10000) {
-        await this.storage.endSession(this.adapter.id);
-        await this.storage.startSession(this.adapter.id);
-        this.lastSyncTime = now;
-      }
-
-      if (document.hidden) return;
-
-      const isTimeEnabled = await this.storage.getEnableTime(this.adapter.id);
-      const timeLimit = await this.storage.getTimeLimit(this.adapter.id);
-
-      if (!isTimeEnabled || timeLimit <= 0) {
-        await this.stopTracking();
+      if (document.hidden) {
+        if (this.isTracking) await this.stopTracking();
         return;
       }
 
@@ -117,8 +103,15 @@ export class SessionManager {
       else if (mode === 'playing_only') shouldTrack = isPlaying;
       else if (mode === 'smart') shouldTrack = isPlaying || !isIdle;
 
-      if (shouldTrack) await this.startTracking();
-      else await this.stopTracking();
+      if (shouldTrack) {
+        if (!this.isTracking) {
+          await this.startTracking();
+        } else {
+          await this.storage.updateSessionTime(this.adapter.id);
+        }
+      } else {
+        if (this.isTracking) await this.stopTracking();
+      }
     }, 2000);
   }
 

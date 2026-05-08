@@ -1,13 +1,18 @@
 import { StorageFacade } from '../../core/storage/index';
 import { ChromeStorageDriver } from '../../adapters/chrome/storage-driver';
 import { i18n } from '../../i18n/index';
+import { PlatformId } from '../../types';
 import { LocaleCode } from '../../i18n/types';
 import { initCustomSelects } from '../components/custom-select';
 import { showModal } from '../components/modal';
 import { initTooltips } from '../components/tooltip';
+import { AnalyticsLoader } from './analytics-loader';
+import { IndexedDbAnalyticsRepository } from '../../adapters/browser/indexeddb-analytics';
 
 const storageDriver = new ChromeStorageDriver();
 const storage = new StorageFacade(storageDriver);
+
+storage.setAnalyticsRepository(new IndexedDbAnalyticsRepository());
 
 function applyTheme(theme: string) {
   const isPageDark =
@@ -291,6 +296,29 @@ async function init() {
       applyTheme('auto');
     }
   });
+
+  // Analytics
+  const analyticsLoader = new AnalyticsLoader(storage);
+  const analyticsPlatformSelector = document.getElementById(
+    'analytics-platform-selector',
+  ) as HTMLSelectElement;
+
+  if (analyticsPlatformSelector) {
+    analyticsPlatformSelector.addEventListener('change', (e) => {
+      const selectedPlatform = (e.target as HTMLSelectElement).value as PlatformId;
+      void analyticsLoader.loadAndRender(selectedPlatform);
+    });
+  }
+
+  const navAnalyticsBtn = document.getElementById('nav-analytics');
+  if (navAnalyticsBtn) {
+    navAnalyticsBtn.addEventListener('click', () => {
+      if (analyticsPlatformSelector) {
+        const currentPlatform = analyticsPlatformSelector.value as PlatformId;
+        void analyticsLoader.loadAndRender(currentPlatform);
+      }
+    });
+  }
 
   initCustomSelects();
   initTooltips();

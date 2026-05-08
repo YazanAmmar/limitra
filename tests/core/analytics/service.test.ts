@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AnalyticsService } from '../../../src/core/analytics/service';
 import { AnalyticsRepository } from '../../../src/core/interfaces/analytics-repository';
+import { SubscriptionService } from '../../../src/core/subscription/service'; // استيراد جديد
 
 describe('AnalyticsService', () => {
   const mockRepo: AnalyticsRepository = {
@@ -24,7 +25,13 @@ describe('AnalyticsService', () => {
     clearRecordsOlderThan: vi.fn(),
   };
 
-  const service = new AnalyticsService(mockRepo);
+  const mockSubscriptionService = {
+    getLimit: vi.fn().mockReturnValue(7),
+    hasCapability: vi.fn().mockReturnValue(true),
+    getCurrentPlan: vi.fn().mockReturnValue('FREE'),
+  } as unknown as SubscriptionService;
+
+  const service = new AnalyticsService(mockRepo, mockSubscriptionService);
 
   it('should calculate today usage correctly using the aggregator', async () => {
     const usage = await service.getTodayUsage('youtube_watch');

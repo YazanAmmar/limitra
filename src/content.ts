@@ -5,7 +5,7 @@ import { ChromeMessageBus } from './adapters/chrome/message-bus';
 import { ChromeConnectionManager } from './adapters/chrome/connection-manager';
 import { ChromeStorageDriver } from './adapters/chrome/storage-driver';
 import { StorageFacade } from './core/storage/index';
-import { IndexedDbAnalyticsRepository } from './adapters/browser/indexeddb-analytics';
+import { ChromeProxyAnalyticsRepository } from './adapters/chrome/proxy-analytics';
 
 declare global {
   interface Window {
@@ -20,7 +20,7 @@ if (!window.__LIMITRA_INJECTED__) {
     const storageDriver = new ChromeStorageDriver();
     const storage = new StorageFacade(storageDriver);
 
-    storage.setAnalyticsRepository(new IndexedDbAnalyticsRepository());
+    storage.setAnalyticsRepository(new ChromeProxyAnalyticsRepository());
 
     const messageBus = new ChromeMessageBus();
     const connectionManager = new ChromeConnectionManager();

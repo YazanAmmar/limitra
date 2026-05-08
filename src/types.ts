@@ -17,6 +17,7 @@ export enum AppAction {
   BLOCK_NOW = 'BLOCK_NOW',
   TAB_ACTIVE = 'TAB_ACTIVE',
   TAB_HIDDEN = 'TAB_HIDDEN',
+  SAVE_ANALYTICS = 'SAVE_ANALYTICS',
 }
 
 export interface ExtensionMessage {
