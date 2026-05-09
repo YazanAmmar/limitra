@@ -11,15 +11,6 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   {
-    files: ['docs/**/*.js'],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.es2021,
-      },
-    },
-  },
-  {
     files: ['src/**/*.ts'],
     languageOptions: {
       parserOptions: {
