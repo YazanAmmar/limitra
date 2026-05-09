@@ -18,7 +18,6 @@
     "esbuild": "^0.28.0",
     "eslint": "^10.2.0",
     "prettier": "^3.8.2",
-    "tailwindcss": "^4.2.4",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.1",
     "vitest": "^4.1.4"
