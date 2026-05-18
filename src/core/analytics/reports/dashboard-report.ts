@@ -6,6 +6,24 @@ export interface TrendDayResult {
   dayName: string;
   totalMs: number;
   dateLabel: string;
+  sessionsCount: number;
+}
+export interface SessionDetail {
+  dayName: string;
+  dateLabel: string;
+  startTimeReadable: string;
+  endTimeReadable: string;
+  durationReadable: string;
+  durationMs: number;
+}
+
+export interface PlatformBreakdown {
+  platformId: string;
+  totalMs: number;
+  percentage: number;
+  readableTime: string;
+  sessionsCount: number;
+  sessionsDetails: SessionDetail[];
 }
 
 export interface DashboardReportResult {
@@ -20,6 +38,7 @@ export interface DashboardReportResult {
     isImproving: boolean;
   };
   weeklyTrend?: TrendDayResult[];
+  platformsBreakdown: PlatformBreakdown[];
 }
 
 export class DashboardReportGenerator {
@@ -45,6 +64,7 @@ export class DashboardReportGenerator {
   public async generate(
     platformId: string,
     translations: TimeTranslations,
+    locale: string,
     daysCount: number = 7,
   ): Promise<DashboardReportResult> {
     const now = new Date();
@@ -66,11 +86,55 @@ export class DashboardReportGenerator {
       const dateObj = new Date(dayStart);
 
       weeklyTrend.push({
-        dayName: dateObj.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayName: dateObj.toLocaleDateString(locale, { weekday: 'short' }),
         totalMs: dayData.duration,
         dateLabel: dateObj.toLocaleDateString(),
+        sessionsCount: dayData.sessions,
       });
     }
+
+    const periodStartMs = todayStart - (daysCount - 1) * 24 * 60 * 60 * 1000;
+    const queryId = platformId === 'all' ? undefined : platformId;
+    const allRecords = await this.repo.queryRecords({
+      platformId: queryId,
+      fromTime: periodStartMs,
+      toTime: todayStart + 24 * 60 * 60 * 1000 - 1,
+    });
+
+    const totalPeriodMs = AnalyticsAggregator.calculateTotalDuration(allRecords);
+    const groupedRecords = AnalyticsAggregator.groupRecordsByPlatform(allRecords);
+
+    const platformsBreakdown: PlatformBreakdown[] = [];
+    Object.entries(groupedRecords).forEach(([pId, records]) => {
+      const platformTotalMs = AnalyticsAggregator.calculateTotalDuration(records);
+      const percentage =
+        totalPeriodMs > 0 ? Math.round((platformTotalMs / totalPeriodMs) * 100) : 0;
+
+      records.sort((a, b) => b.startTime - a.startTime);
+
+      const sessionsDetails: SessionDetail[] = records.map((r) => {
+        const d = new Date(r.startTime);
+        return {
+          dayName: d.toLocaleDateString(locale, { weekday: 'short' }),
+          dateLabel: d.toLocaleDateString(locale),
+          startTimeReadable: AnalyticsFormatter.formatTime(r.startTime),
+          endTimeReadable: AnalyticsFormatter.formatTime(r.endTime),
+          durationReadable: AnalyticsFormatter.msToReadable(r.durationMs, translations),
+          durationMs: r.durationMs,
+        };
+      });
+
+      platformsBreakdown.push({
+        platformId: pId,
+        totalMs: platformTotalMs,
+        percentage,
+        readableTime: AnalyticsFormatter.msToReadable(platformTotalMs, translations),
+        sessionsCount: records.length,
+        sessionsDetails,
+      });
+    });
+
+    platformsBreakdown.sort((a, b) => b.totalMs - a.totalMs);
 
     return {
       raw: {
@@ -84,6 +148,7 @@ export class DashboardReportGenerator {
         isImproving: trendPercent <= 0,
       },
       weeklyTrend,
+      platformsBreakdown,
     };
   }
 }

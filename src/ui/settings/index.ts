@@ -112,6 +112,7 @@ function updateUITexts() {
     // Footer
     'footer-copyright': t.dashboard.footerCopyright,
     'footer-privacy': t.dashboard.footerPrivacy,
+    'lbl-platform-breakdown': t.dashboard.platformsBreakdown,
   };
 
   Object.entries(map).forEach(([id, value]) => {

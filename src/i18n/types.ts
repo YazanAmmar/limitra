@@ -91,6 +91,10 @@ export interface LocaleStrings {
     premiumBadge: string;
     comingSoonTitle: string;
     comingSoonDesc: string;
+    emptyUsageData: string;
+    platformsBreakdown: string;
+    sessionSingle: string;
+    sessionPlural: string;
   };
   tones: {
     random: string;

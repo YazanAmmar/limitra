@@ -43,4 +43,17 @@ export class AnalyticsAggregator {
     const uniqueSessionIds = new Set(records.map((record) => record.id));
     return uniqueSessionIds.size;
   }
+
+  public static groupRecordsByPlatform(
+    records: AnalyticsRecord[],
+  ): Record<string, AnalyticsRecord[]> {
+    const grouped: Record<string, AnalyticsRecord[]> = {};
+    for (const record of records) {
+      if (!grouped[record.platformId]) {
+        grouped[record.platformId] = [];
+      }
+      grouped[record.platformId].push(record);
+    }
+    return grouped;
+  }
 }

@@ -95,6 +95,10 @@ const en: LocaleStrings = {
     comingSoonTitle: 'Premium Feature',
     comingSoonDesc:
       'Advanced time-series analytics (30 days and yearly reports) will be available soon in the Pro tier. Stay tuned!',
+    emptyUsageData: 'No usage data available for this period.',
+    platformsBreakdown: 'Platforms Breakdown',
+    sessionSingle: 'Session',
+    sessionPlural: 'Sessions',
   },
   tones: {
     random: 'Random',

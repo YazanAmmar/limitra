@@ -41,4 +41,11 @@ export class AnalyticsFormatter {
     if (trendPercent < 0) return `${trendPercent}%`;
     return '0%';
   }
+
+  public static formatTime(timestamp: number): string {
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 }

@@ -2,6 +2,7 @@ import { AnalyticsAggregator } from './aggregator';
 import { AnalyticsRepository } from '../interfaces/analytics-repository';
 import { DashboardReportGenerator } from './reports/dashboard-report';
 import { TimeTranslations } from './formatter';
+import { AnalyticsRecord } from './types';
 
 export class AnalyticsService {
   private dashboardReport: DashboardReportGenerator;
@@ -105,11 +106,15 @@ export class AnalyticsService {
   /**
    * Delegate dashboard report generation to the reporting layer
    */
-  public async getDashboardReport(platformId: string, translations: TimeTranslations) {
-    return this.dashboardReport.generate(platformId, translations);
+  public async getDashboardReport(
+    platformId: string,
+    translations: TimeTranslations,
+    locale: string,
+  ) {
+    return this.dashboardReport.generate(platformId, translations, locale);
   }
 
-  public async saveRecord(record: import('./types').AnalyticsRecord): Promise<void> {
+  public async saveRecord(record: AnalyticsRecord): Promise<void> {
     return this.repo.saveRecord(record);
   }
 }
