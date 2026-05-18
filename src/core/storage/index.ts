@@ -208,7 +208,7 @@ export class StorageFacade {
   // Analytics & Dependencies
   public setAnalyticsRepository(repo: AnalyticsRepository): void {
     this.session.setAnalyticsRepository(repo);
-    this.analyticsService = new AnalyticsService(repo, this.subscriptionService);
+    this.analyticsService = new AnalyticsService(repo);
   }
 
   // Sessions

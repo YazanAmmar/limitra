@@ -40,6 +40,7 @@ export class AnalyticsAggregator {
    * the definition of a session changes in the future
    */
   public static calculateSessionCount(records: AnalyticsRecord[]): number {
-    return records.length;
+    const uniqueSessionIds = new Set(records.map((record) => record.id));
+    return uniqueSessionIds.size;
   }
 }

@@ -83,6 +83,14 @@ export interface LocaleStrings {
     statTrend: string;
     hoursShort: string;
     minutesShort: string;
+    optAllPlatforms: string;
+    usageTrends: string;
+    last7Days: string;
+    last30Days: string;
+    last1Year: string;
+    premiumBadge: string;
+    comingSoonTitle: string;
+    comingSoonDesc: string;
   };
   tones: {
     random: string;

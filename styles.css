@@ -1263,3 +1263,69 @@ select.brutal-select-hidden {
 .text-danger {
   color: var(--color-danger);
 }
+
+/* --- Usage Trends Card --- */
+
+.trend-card {
+  margin-top: 24px;
+  padding: 24px;
+}
+
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--ui-border);
+}
+
+.trend-select {
+  width: 180px !important;
+  min-width: 180px !important;
+}
+
+.chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  padding-top: 20px;
+  gap: 12px;
+}
+
+.bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  flex: 1;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.bar {
+  width: 100%;
+  max-width: 48px;
+  background-color: var(--limitra-accent);
+  border: 2px solid var(--ui-border);
+  box-shadow: 2px 2px 0px 0px var(--ui-border);
+  transition: height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  cursor: crosshair;
+  height: var(--dynamic-height, 0%);
+}
+
+.bar:hover {
+  background-color: var(--text-main);
+  box-shadow: 4px 4px 0px 0px var(--limitra-accent);
+  transform: translate(-2px, -2px);
+}
+
+.day-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}

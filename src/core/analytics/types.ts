@@ -8,6 +8,7 @@ export interface AnalyticsRecord {
   startTime: number;
   endTime: number;
   durationMs: number;
+  type?: 'SESSION';
 }
 
 /**

@@ -1,17 +1,12 @@
 import { AnalyticsAggregator } from './aggregator';
 import { AnalyticsRepository } from '../interfaces/analytics-repository';
-import { SubscriptionService } from '../subscription/service';
-import { LimitType } from '../subscription/limits';
 import { DashboardReportGenerator } from './reports/dashboard-report';
 import { TimeTranslations } from './formatter';
 
 export class AnalyticsService {
   private dashboardReport: DashboardReportGenerator;
 
-  constructor(
-    private repo: AnalyticsRepository,
-    private subscriptionService: SubscriptionService,
-  ) {
+  constructor(private repo: AnalyticsRepository) {
     this.dashboardReport = new DashboardReportGenerator(this.repo);
   }
 
@@ -89,18 +84,21 @@ export class AnalyticsService {
   }
 
   /**
-   * Removes old analytics data to save storage space (Garbage Collection).
-   * By default, records older than 7 days will be deleted.
+   * Garbage collection hook reserved for future storage maintenance strategies.
+   *
+   * Analytics retention is currently set to lifetime because session-based
+   * records are lightweight and valuable for long-term behavioral analysis.
+   *
+   * In future releases, this routine may be reused for:
+   * - tier-based retention policies
+   * - archive/compression strategies
+   * - temporary cache cleanup
+   * - cloud synchronization maintenance
+   * - AI memory optimization
    */
   public async performGarbageCollection(): Promise<void> {
-    const retentionDays = this.subscriptionService.getLimit(LimitType.ANALYTICS_RETENTION_DAYS);
-
-    const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
-
-    await this.repo.clearRecordsOlderThan(cutoffTime);
-
     console.info(
-      `[Limitra Analytics] Garbage collection completed. Cleared records older than ${retentionDays} days.`,
+      '[Limitra Analytics] Garbage collection skipped. Lifetime retention mode is active.',
     );
   }
 

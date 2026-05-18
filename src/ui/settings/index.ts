@@ -100,6 +100,12 @@ function updateUITexts() {
     'lbl-stat-sessions': t.dashboard.statSessions,
     'lbl-stat-trend': t.dashboard.statTrend,
 
+    'opt-all-platforms': t.dashboard.optAllPlatforms,
+    'lbl-usage-trends': t.dashboard.usageTrends,
+    'opt-last-7-days': t.dashboard.last7Days,
+    'opt-last-30-days': t.dashboard.last30Days,
+    'opt-last-1-year': t.dashboard.last1Year,
+
     // CTA
     'btn-sponsor-text': t.dashboard.btnSponsor,
 
@@ -331,6 +337,34 @@ async function init() {
     analyticsPlatformSelector.addEventListener('change', (e) => {
       const selectedPlatform = (e.target as HTMLSelectElement).value as PlatformId;
       void analyticsLoader.loadAndRender(selectedPlatform);
+    });
+  }
+
+  const trendRangeSelector = document.getElementById('trend-range-selector') as HTMLSelectElement;
+
+  if (trendRangeSelector) {
+    trendRangeSelector.addEventListener('change', async (e) => {
+      const target = e.target as HTMLSelectElement;
+      const selectedValue = target.value;
+
+      if (selectedValue === '30' || selectedValue === '365') {
+        await showModal({
+          badgeText: i18n.t.dashboard.premiumBadge,
+          title: i18n.t.dashboard.comingSoonTitle,
+          message: i18n.t.dashboard.comingSoonDesc,
+          confirmText: 'OK',
+        });
+
+        target.value = '7';
+
+        document.querySelectorAll('.custom-brutal-select').forEach((el) => el.remove());
+        document.querySelectorAll('select').forEach((el) => {
+          el.classList.remove('brutal-select-hidden');
+        });
+        initCustomSelects();
+      } else if (selectedValue === '7') {
+        // TODO: fetch backend data once ready
+      }
     });
   }
 

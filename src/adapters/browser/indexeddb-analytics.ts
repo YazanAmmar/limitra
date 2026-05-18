@@ -9,13 +9,14 @@ export class IndexedDbAnalyticsRepository implements AnalyticsRepository {
   private async getDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.version);
-
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
           store.createIndex('platformId', 'platformId', { unique: false });
           store.createIndex('startTime', 'startTime', { unique: false });
+          store.createIndex('platform_time', ['platformId', 'startTime'], { unique: false });
         }
       };
 

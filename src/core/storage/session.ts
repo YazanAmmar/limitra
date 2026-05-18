@@ -12,8 +12,17 @@ const NEXT_RESET_KEY = 'limitra_next_reset';
 export class SessionStorage {
   private activeSessions: Map<
     PlatformId,
-    { id: string; startTime: number; interval?: ReturnType<typeof setInterval> }
+    {
+      id: string;
+      absoluteStartTime: number;
+      segmentStartTime: number;
+      accumulatedMs: number;
+      interval?: ReturnType<typeof setInterval>;
+    }
   > = new Map();
+
+  private readonly GRACE_PERIOD_MS = 15 * 60 * 1000;
+
   private analyticsRepo?: AnalyticsRepository;
 
   constructor(
@@ -59,19 +68,53 @@ export class SessionStorage {
   }
 
   async startSession(platform: PlatformId): Promise<void> {
+    if (this.activeSessions.has(platform)) {
+      return;
+    }
+
     const now = Date.now();
     await this.driver.set<number>(`limitra_${platform}_last_active`, now);
 
     if (this.analyticsRepo) {
-      const sessionId = generateUUID();
-      this.activeSessions.set(platform, { id: sessionId, startTime: now });
+      const pausedKey = `limitra_${platform}_paused_session`;
+      const paused = await this.driver.get<{
+        id: string;
+        startTime: number;
+        endTime: number;
+        durationMs: number;
+      }>(pausedKey);
+
+      let sessionId: string;
+      let absoluteStartTime: number;
+      let accumulatedMs: number;
+
+      if (paused && now - paused.endTime <= this.GRACE_PERIOD_MS) {
+        sessionId = paused.id;
+        absoluteStartTime = paused.startTime;
+        accumulatedMs = paused.durationMs;
+        console.info(`[Limitra Analytics] Resuming session for ${platform} across tabs`);
+        await this.driver.set(pausedKey, null);
+      } else {
+        sessionId = generateUUID();
+        absoluteStartTime = now;
+        accumulatedMs = 0;
+        await this.driver.set(pausedKey, null);
+      }
+
+      this.activeSessions.set(platform, {
+        id: sessionId,
+        absoluteStartTime,
+        segmentStartTime: now,
+        accumulatedMs,
+      });
 
       const record: AnalyticsRecord = {
         id: sessionId,
         platformId: platform,
-        startTime: now,
+        startTime: absoluteStartTime,
         endTime: now,
-        durationMs: 0,
+        durationMs: accumulatedMs,
+        type: 'SESSION',
       };
       await this.analyticsRepo.saveRecord(record).catch(() => {});
 
@@ -79,17 +122,22 @@ export class SessionStorage {
         const session = this.activeSessions.get(platform);
         if (session && this.analyticsRepo) {
           const currentTime = Date.now();
+          const currentSegment = currentTime - session.segmentStartTime;
+          const totalDuration = session.accumulatedMs + currentSegment;
+
           await this.analyticsRepo
             .saveRecord({
               id: session.id,
               platformId: platform,
-              startTime: session.startTime,
+              startTime: session.absoluteStartTime,
               endTime: currentTime,
-              durationMs: currentTime - session.startTime,
+              durationMs: totalDuration,
+              type: 'SESSION',
             })
             .catch(() => {});
         }
-      }, 5000);
+      }, 30000);
+
       this.activeSessions.get(platform)!.interval = interval;
     }
   }
@@ -101,17 +149,29 @@ export class SessionStorage {
 
     if (activeSession) {
       if (activeSession.interval) clearInterval(activeSession.interval);
+
       if (this.analyticsRepo) {
         const currentTime = Date.now();
+        const currentSegment = currentTime - activeSession.segmentStartTime;
+        const totalDuration = activeSession.accumulatedMs + currentSegment;
+
         await this.analyticsRepo
           .saveRecord({
             id: activeSession.id,
             platformId: platform,
-            startTime: activeSession.startTime,
+            startTime: activeSession.absoluteStartTime,
             endTime: currentTime,
-            durationMs: currentTime - activeSession.startTime,
+            durationMs: totalDuration,
+            type: 'SESSION',
           })
           .catch(() => {});
+
+        await this.driver.set(`limitra_${platform}_paused_session`, {
+          id: activeSession.id,
+          startTime: activeSession.absoluteStartTime,
+          endTime: currentTime,
+          durationMs: totalDuration,
+        });
       }
       this.activeSessions.delete(platform);
     }

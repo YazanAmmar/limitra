@@ -86,6 +86,15 @@ const en: LocaleStrings = {
     statTrend: 'Vs Yesterday',
     hoursShort: 'h',
     minutesShort: 'm',
+    optAllPlatforms: 'All Platforms',
+    usageTrends: 'Usage Trends',
+    last7Days: 'Last 7 Days',
+    last30Days: 'Last 30 Days (Pro)',
+    last1Year: 'Last 1 Year (Pro)',
+    premiumBadge: 'Premium',
+    comingSoonTitle: 'Premium Feature',
+    comingSoonDesc:
+      'Advanced time-series analytics (30 days and yearly reports) will be available soon in the Pro tier. Stay tuned!',
   },
   tones: {
     random: 'Random',

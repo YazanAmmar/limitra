@@ -84,6 +84,15 @@ const ar: LocaleStrings = {
     statTrend: 'مقارنة بالأمس',
     hoursShort: 'س',
     minutesShort: 'د',
+    optAllPlatforms: 'كل المنصات',
+    usageTrends: 'مسار الاستخدام',
+    last7Days: 'آخر 7 أيام',
+    last30Days: 'آخر 30 يوم (Pro)',
+    last1Year: 'آخر سنة (Pro)',
+    premiumBadge: 'احترافي',
+    comingSoonTitle: 'ميزة مدفوعة',
+    comingSoonDesc:
+      'التحليلات الزمنية المتقدمة (تقارير 30 يوم والتقارير السنوية) ستكون متاحة قريباً في النسخة المدفوعة. خليك قريب!',
   },
   tones: {
     random: 'عشوائي',

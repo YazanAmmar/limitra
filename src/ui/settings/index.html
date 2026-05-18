@@ -195,9 +195,10 @@
         <div class="tab-content" id="content-analytics">
           <div class="settings-wrapper">
             <div class="setting-group">
+              <h4 class="setting-group-title" id="group-analytics-title">Platform Analytics</h4>
               <div class="form-header-row analytics-header-row">
-                <h4 class="setting-group-title" id="group-analytics-title">Platform Analytics</h4>
                 <select id="analytics-platform-selector" class="brutal-select">
+                  <option value="all" id="opt-all-platforms">All Platforms</option>
                   <option value="youtube_shorts">YouTube Shorts</option>
                   <option value="youtube_watch">YouTube Watch</option>
                   <option value="instagram_reels">Instagram Reels</option>
@@ -220,6 +221,21 @@
                   <h5 class="setting-title stat-title" id="lbl-stat-trend">Vs Yesterday</h5>
                   <div id="stat-trend" class="stat-value">--</div>
                 </div>
+              </div>
+
+              <div class="setting-card trend-card">
+                <div class="trend-header">
+                  <h5 class="setting-title" id="lbl-usage-trends">Usage Trends</h5>
+                  <div class="setting-control">
+                    <select id="trend-range-selector" class="brutal-select trend-select">
+                      <option value="7" id="opt-last-7-days">Last 7 Days</option>
+                      <option value="30" id="opt-last-30-days">Last 30 Days (Pro)</option>
+                      <option value="365" id="opt-last-1-year">Last 1 Year (Pro)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="chart-container" id="trend-chart"></div>
               </div>
             </div>
           </div>
