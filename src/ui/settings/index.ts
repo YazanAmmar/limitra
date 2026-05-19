@@ -193,23 +193,25 @@ async function init() {
   const savedTheme = await storage.getTheme();
   applyTheme(savedTheme);
 
-  await i18n.init();
+  const savedLang = await storage.getLanguage();
+  i18n.init(savedLang);
   updateUITexts();
   setupNavigation();
 
   const dashTrackingInput = document.getElementById('dash-tracking') as HTMLSelectElement;
   const dashLangInput = document.getElementById('dash-language') as HTMLSelectElement;
   dashLangInput.value = i18n.language;
-  dashLangInput.addEventListener('change', (event) => {
+  dashLangInput.addEventListener('change', async (event) => {
     const target = event.target as HTMLSelectElement;
     const newLang = target.value as LocaleCode;
-    if (newLang !== i18n.language) {
-      void i18n.setLocale(newLang).then(() => {
-        updateUITexts();
 
-        const currentTracking = dashTrackingInput.value;
-        updateTrackingDescription(currentTracking);
-      });
+    if (newLang !== i18n.language) {
+      i18n.setLocale(newLang);
+      await storage.setLanguage(newLang);
+
+      updateUITexts();
+      const currentTracking = dashTrackingInput.value;
+      updateTrackingDescription(currentTracking);
     }
   });
 
@@ -282,43 +284,45 @@ async function init() {
     });
   }
 
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local') {
-      if (changes['limitra_theme']) {
-        const newTheme = String(changes['limitra_theme'].newValue);
-        applyTheme(newTheme);
-        dashThemeInput.value = newTheme;
-      }
-      if (changes['limitra_language']) {
-        const newLang = String(changes['limitra_language'].newValue) as LocaleCode;
-        void i18n.setLocale(newLang).then(() => {
-          updateUITexts();
+  storage.onChange((changes) => {
+    if (changes['limitra_theme']) {
+      const newTheme = String(changes['limitra_theme'].newValue);
+      applyTheme(newTheme);
+      dashThemeInput.value = newTheme;
+    }
 
-          document.querySelectorAll('.custom-brutal-select').forEach((el) => el.remove());
-          document.querySelectorAll('select').forEach((el) => {
-            el.classList.remove('brutal-select-hidden');
-          });
+    if (changes['limitra_language']) {
+      const newLang = String(changes['limitra_language'].newValue) as LocaleCode;
+      i18n.setLocale(newLang);
 
-          initCustomSelects();
+      updateUITexts();
 
-          dashLangInput.value = i18n.language;
+      document.querySelectorAll('.custom-brutal-select').forEach((el) => el.remove());
+      document.querySelectorAll('select').forEach((el) => {
+        el.classList.remove('brutal-select-hidden');
+      });
 
-          const currentTracking = dashTrackingInput.value;
-          updateTrackingDescription(currentTracking);
-          updateConditionDescription(dashConditionInput.value);
-        });
-      }
-      if (changes['limitra_block_condition']) {
-        const newCond = String(changes['limitra_block_condition'].newValue);
-        dashConditionInput.value = newCond;
-        updateConditionDescription(newCond);
-      }
-      if (changes['limitra_block_duration']) {
-        dashDurationInput.value = String(changes['limitra_block_duration'].newValue);
-      }
-      if (changes['limitra_quote_tone']) {
-        dashToneInput.value = String(changes['limitra_quote_tone'].newValue);
-      }
+      initCustomSelects();
+
+      dashLangInput.value = i18n.language;
+
+      const currentTracking = dashTrackingInput.value;
+      updateTrackingDescription(currentTracking);
+      updateConditionDescription(dashConditionInput.value);
+    }
+
+    if (changes['limitra_block_condition']) {
+      const newCond = String(changes['limitra_block_condition'].newValue);
+      dashConditionInput.value = newCond;
+      updateConditionDescription(newCond);
+    }
+
+    if (changes['limitra_block_duration']) {
+      dashDurationInput.value = String(changes['limitra_block_duration'].newValue);
+    }
+
+    if (changes['limitra_quote_tone']) {
+      dashToneInput.value = String(changes['limitra_quote_tone'].newValue);
     }
   });
 

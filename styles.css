@@ -11,8 +11,8 @@
   --text-on-accent: #ffffff;
   --grid-color: rgba(0, 0, 0, 0.04);
 
-  --color-success: #10b981;
-  --color-danger: #ef4444;
+  --color-success: var(--limitra-accent);
+  --color-danger: var(--text-muted);
 }
 
 /* --- Dark Mode Palette --- */

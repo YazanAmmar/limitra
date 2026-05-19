@@ -41,7 +41,7 @@ export class AppOrchestrator {
   }
 
   public async start() {
-    initOverlayListeners();
+    initOverlayListeners(this.storage);
     await this.initializeState();
 
     this.setupMessenger();
@@ -129,7 +129,7 @@ export class AppOrchestrator {
       await this.sessionManager.blockSession();
     }
     this.activeAdapter.executePunishment();
-    await showOverlay(finalReason);
+    await showOverlay(this.storage, finalReason);
   }
 
   private setupStorageListener() {
@@ -209,7 +209,7 @@ export class AppOrchestrator {
           );
           if (overlay) overlay.remove();
           this.activeAdapter.executePunishment();
-          await showOverlay('bypass');
+          await showOverlay(this.storage, 'bypass');
         }
         return;
       }

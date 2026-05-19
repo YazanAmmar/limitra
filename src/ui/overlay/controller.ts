@@ -1,19 +1,19 @@
 import { StorageFacade } from '../../core/storage/index';
-import { ChromeStorageDriver } from '../../adapters/chrome/storage-driver';
 import { i18n } from '../../i18n/index';
 import { renderOverlay, updateOverlayTheme } from './renderer';
 import { watchOverlayPersistence } from './persistence';
 
-const storageDriver = new ChromeStorageDriver();
-const storage = new StorageFacade(storageDriver);
-
 /**
  * Main entry to show overlay
  */
-export async function showOverlay(reasonKey: string = 'time'): Promise<void> {
+export async function showOverlay(
+  storage: StorageFacade,
+  reasonKey: string = 'time',
+): Promise<void> {
   if (document.getElementById('limitra-overlay')) return;
 
-  await i18n.init();
+  const lang = await storage.getLanguage();
+  i18n.init(lang);
 
   const toneKey = await storage.getQuoteTone();
   const quoteText = i18n.getRandomQuote(toneKey);
@@ -55,16 +55,16 @@ export async function showOverlay(reasonKey: string = 'time'): Promise<void> {
   });
 
   watchOverlayPersistence(() => {
-    void showOverlay('bypass');
+    void showOverlay(storage, 'bypass');
   });
 }
 
 /**
  * Setup listeners (call once)
  */
-export function initOverlayListeners(): void {
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local' && changes['limitra_theme']) {
+export function initOverlayListeners(storage: StorageFacade): void {
+  storage.onChange((changes) => {
+    if (changes['limitra_theme']) {
       const theme = changes['limitra_theme'].newValue as string;
       const isDark =
         theme === 'dark' ||

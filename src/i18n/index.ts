@@ -1,11 +1,6 @@
 import { LocaleCode, LocaleStrings } from './types';
 import en from './locales/en';
 import ar from './locales/ar';
-import { StorageFacade } from '../core/storage/index';
-import { ChromeStorageDriver } from '../adapters/chrome/storage-driver';
-
-const storageDriver = new ChromeStorageDriver();
-const storage = new StorageFacade(storageDriver);
 
 const LOCALES: Record<LocaleCode, LocaleStrings> = {
   en,
@@ -13,26 +8,19 @@ const LOCALES: Record<LocaleCode, LocaleStrings> = {
 };
 
 let currentLocale: LocaleCode = 'en';
-let isInitialized = false;
 
 export const i18n = {
-  async init() {
-    if (isInitialized) return;
-
-    const savedLang = await storage.getLanguage();
-    if (savedLang === 'en' || savedLang === 'ar') {
-      currentLocale = savedLang;
+  init(initialLang: string) {
+    if (initialLang === 'en' || initialLang === 'ar') {
+      currentLocale = initialLang as LocaleCode;
     } else {
-      const browserLang = chrome.i18n.getUILanguage();
+      const browserLang = typeof navigator !== 'undefined' ? navigator.language : 'en';
       currentLocale = browserLang.startsWith('ar') ? 'ar' : 'en';
     }
-
-    isInitialized = true;
   },
 
-  async setLocale(lang: LocaleCode) {
+  setLocale(lang: LocaleCode) {
     currentLocale = lang;
-    await storage.setLanguage(lang);
   },
 
   get language(): LocaleCode {
