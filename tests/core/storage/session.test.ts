@@ -67,9 +67,6 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
     vi.setSystemTime(new Date('2026-05-18T10:10:00Z'));
     await sessionStorage.endSession(YT);
 
-    const pausedKey = `limitra_${YT}_paused_session`;
-    expect(memoryStore[pausedKey]).toBeDefined();
-
     vi.setSystemTime(new Date('2026-05-18T10:20:00Z'));
     await sessionStorage.startSession(YT);
 
@@ -78,7 +75,9 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
 
     const lastCallArg = vi.mocked(mockAnalyticsRepo.saveRecord).mock.lastCall![0];
     expect(lastCallArg.durationMs).toBe(20 * 60 * 1000);
-    expect(memoryStore[pausedKey]).toBeDefined();
+
+    const sharedKey = `limitra_${YT}_shared_session`;
+    expect(memoryStore[sharedKey]).toBeDefined();
   });
 
   it('Scenario 3: Grace Period Expiration - Should create new session after 15 minutes', async () => {
@@ -87,8 +86,8 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
     vi.setSystemTime(new Date('2026-05-18T10:10:00Z'));
     await sessionStorage.endSession(YT);
 
-    const pausedData = memoryStore[`limitra_${YT}_paused_session`] as { id: string };
-    const firstSessionId = pausedData.id;
+    const sharedData = memoryStore[`limitra_${YT}_shared_session`] as { id: string };
+    const firstSessionId = sharedData.id;
 
     vi.setSystemTime(new Date('2026-05-18T10:30:00Z'));
     await sessionStorage.startSession(YT);
@@ -96,12 +95,12 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
     vi.setSystemTime(new Date('2026-05-18T10:35:00Z'));
     await sessionStorage.endSession(YT);
 
-    const newSession = memoryStore[`limitra_${YT}_paused_session`] as {
+    const newSession = memoryStore[`limitra_${YT}_shared_session`] as {
       id: string;
-      durationMs: number;
+      accumulatedMs: number;
     };
     expect(newSession.id).not.toBe(firstSessionId);
-    expect(newSession.durationMs).toBe(5 * 60 * 1000);
+    expect(newSession.accumulatedMs).toBe(5 * 60 * 1000);
   });
 
   it('Scenario 4: Interruption Exclusion - Should calculate accumulatedMs correctly ignoring break time', async () => {
@@ -125,8 +124,8 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
     vi.setSystemTime(new Date('2026-05-18T10:05:00Z'));
     await sessionStorage.endSession(YT);
 
-    const pausedSession = memoryStore[`limitra_${YT}_paused_session`];
-    expect(pausedSession).toBeDefined();
+    const sharedSession = memoryStore[`limitra_${YT}_shared_session`];
+    expect(sharedSession).toBeDefined();
 
     const tabBSessionStorage = new SessionStorage(mockDriver, mockStats);
     tabBSessionStorage.setAnalyticsRepository(mockAnalyticsRepo);
@@ -140,7 +139,7 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
     const lastCallArg = vi.mocked(mockAnalyticsRepo.saveRecord).mock.lastCall![0];
     expect(lastCallArg.durationMs).toBe(10 * 60 * 1000);
 
-    const finalPausedSession = memoryStore[`limitra_${YT}_paused_session`] as { id: string };
-    expect(finalPausedSession).toBeDefined();
+    const finalSharedSession = memoryStore[`limitra_${YT}_shared_session`] as { id: string };
+    expect(finalSharedSession).toBeDefined();
   });
 });

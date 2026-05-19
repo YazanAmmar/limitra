@@ -11,7 +11,7 @@ export class AnalyticsFormatter {
     ms: number,
     t: TimeTranslations = { hours: 'h', minutes: 'm' },
   ): string {
-    const totalMinutes = Math.floor(ms / (1000 * 60));
+    const totalMinutes = Math.round(ms / (1000 * 60));
     if (totalMinutes < 1) return `0${t.minutes}`;
 
     const hours = Math.floor(totalMinutes / 60);

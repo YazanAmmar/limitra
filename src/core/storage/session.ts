@@ -17,6 +17,7 @@ export class SessionStorage {
       absoluteStartTime: number;
       segmentStartTime: number;
       accumulatedMs: number;
+      lastIntervalTick: number;
       interval?: ReturnType<typeof setInterval>;
     }
   > = new Map();
@@ -76,29 +77,27 @@ export class SessionStorage {
     await this.driver.set<number>(`limitra_${platform}_last_active`, now);
 
     if (this.analyticsRepo) {
-      const pausedKey = `limitra_${platform}_paused_session`;
-      const paused = await this.driver.get<{
+      const sharedKey = `limitra_${platform}_shared_session`;
+      const shared = await this.driver.get<{
         id: string;
-        startTime: number;
-        endTime: number;
-        durationMs: number;
-      }>(pausedKey);
+        absoluteStartTime: number;
+        accumulatedMs: number;
+        lastUpdated: number;
+      }>(sharedKey);
 
       let sessionId: string;
       let absoluteStartTime: number;
       let accumulatedMs: number;
 
-      if (paused && now - paused.endTime <= this.GRACE_PERIOD_MS) {
-        sessionId = paused.id;
-        absoluteStartTime = paused.startTime;
-        accumulatedMs = paused.durationMs;
-        console.info(`[Limitra Analytics] Resuming session for ${platform} across tabs`);
-        await this.driver.set(pausedKey, null);
+      if (shared && now - shared.lastUpdated <= this.GRACE_PERIOD_MS) {
+        sessionId = shared.id;
+        absoluteStartTime = shared.absoluteStartTime;
+        accumulatedMs = shared.accumulatedMs;
+        console.info(`[Limitra Analytics] Joining shared session for ${platform}`);
       } else {
         sessionId = generateUUID();
         absoluteStartTime = now;
         accumulatedMs = 0;
-        await this.driver.set(pausedKey, null);
       }
 
       this.activeSessions.set(platform, {
@@ -106,6 +105,14 @@ export class SessionStorage {
         absoluteStartTime,
         segmentStartTime: now,
         accumulatedMs,
+        lastIntervalTick: now,
+      });
+
+      await this.driver.set(sharedKey, {
+        id: sessionId,
+        absoluteStartTime,
+        accumulatedMs,
+        lastUpdated: now,
       });
 
       const record: AnalyticsRecord = {
@@ -122,8 +129,25 @@ export class SessionStorage {
         const session = this.activeSessions.get(platform);
         if (session && this.analyticsRepo) {
           const currentTime = Date.now();
+          const delta = currentTime - session.lastIntervalTick;
+
+          if (delta > 60000) {
+            console.warn('[SessionStorage] Time warp detected. Skipping gap.');
+            session.lastIntervalTick = currentTime;
+            session.segmentStartTime += delta - 30000;
+            return;
+          }
+
+          session.lastIntervalTick = currentTime;
           const currentSegment = currentTime - session.segmentStartTime;
           const totalDuration = session.accumulatedMs + currentSegment;
+
+          await this.driver.set(sharedKey, {
+            id: session.id,
+            absoluteStartTime: session.absoluteStartTime,
+            accumulatedMs: totalDuration,
+            lastUpdated: currentTime,
+          });
 
           await this.analyticsRepo
             .saveRecord({
@@ -155,23 +179,27 @@ export class SessionStorage {
         const currentSegment = currentTime - activeSession.segmentStartTime;
         const totalDuration = activeSession.accumulatedMs + currentSegment;
 
-        await this.analyticsRepo
-          .saveRecord({
-            id: activeSession.id,
-            platformId: platform,
-            startTime: activeSession.absoluteStartTime,
-            endTime: currentTime,
-            durationMs: totalDuration,
-            type: 'SESSION',
-          })
-          .catch(() => {});
+        if (totalDuration > 2000) {
+          const sharedKey = `limitra_${platform}_shared_session`;
 
-        await this.driver.set(`limitra_${platform}_paused_session`, {
-          id: activeSession.id,
-          startTime: activeSession.absoluteStartTime,
-          endTime: currentTime,
-          durationMs: totalDuration,
-        });
+          await this.driver.set(sharedKey, {
+            id: activeSession.id,
+            absoluteStartTime: activeSession.absoluteStartTime,
+            accumulatedMs: totalDuration,
+            lastUpdated: currentTime,
+          });
+
+          await this.analyticsRepo
+            .saveRecord({
+              id: activeSession.id,
+              platformId: platform,
+              startTime: activeSession.absoluteStartTime,
+              endTime: currentTime,
+              durationMs: totalDuration,
+              type: 'SESSION',
+            })
+            .catch(() => {});
+        }
       }
       this.activeSessions.delete(platform);
     }

@@ -83,6 +83,7 @@ export class SessionManager {
 
       if (now - this.lastHeartbeat > 5000 && this.isTracking) {
         console.warn('[Limitra] Sleep detected. Erasing time gap.');
+        await this.stopTracking();
         this.lastHeartbeat = now;
         return;
       }

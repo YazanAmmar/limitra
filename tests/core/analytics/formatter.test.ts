@@ -3,7 +3,7 @@ import { AnalyticsFormatter } from '../../../src/core/analytics/formatter';
 
 describe('AnalyticsFormatter', () => {
   it('should format ms to readable string correctly', () => {
-    expect(AnalyticsFormatter.msToReadable(30000)).toBe('0m');
+    expect(AnalyticsFormatter.msToReadable(30000)).toBe('1m');
     expect(AnalyticsFormatter.msToReadable(45 * 60 * 1000)).toBe('45m');
     expect(AnalyticsFormatter.msToReadable(135 * 60 * 1000)).toBe('2h 15m');
     expect(AnalyticsFormatter.msToReadable(180 * 60 * 1000)).toBe('3h');

@@ -80,7 +80,7 @@ function updateProgressBar() {
   const isTimeEnabled = toggleTime.checked;
   const limit = Number(limitInput.value) || 0;
   const timeLimit = Number(timeInput.value) || 0;
-  const timeSpentMins = Math.floor(currentConsumedTimeMs / (60 * 1000));
+  const timeSpentMins = Math.round(currentConsumedTimeMs / (60 * 1000));
   const t = i18n.t;
 
   const containerVideos = document.getElementById('track-container-videos') as HTMLElement;
@@ -119,7 +119,7 @@ function updateProgressBar() {
 }
 
 function syncUIState(isBlocked: boolean, count: number, timeMs: number) {
-  const timeSpentMins = Math.floor(timeMs / (60 * 1000));
+  const timeSpentMins = Math.round(timeMs / (60 * 1000));
   const hasConsumed = count > 0 || timeSpentMins > 0;
 
   const inputs = [limitInput, timeInput, toggleLimit, toggleTime];
