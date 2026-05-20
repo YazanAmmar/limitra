@@ -28,6 +28,8 @@ export class AppOrchestrator {
   private isTimeEnabled: boolean = false;
   private timeSpentMs: number = 0;
 
+  private timeCheckInterval: ReturnType<typeof setInterval> | null = null;
+
   constructor(
     adapter: PlatformAdapter,
     messageBus: MessageBus,
@@ -51,6 +53,27 @@ export class AppOrchestrator {
 
     await this.runInitialChecks();
     this.setupTracker();
+    this.startTimeChecker();
+  }
+
+  private isCheckingTime: boolean = false;
+
+  private startTimeChecker() {
+    this.timeCheckInterval = setInterval(async () => {
+      if (this.isCheckingTime || this.isBlocked || !this.isTimeEnabled || this.timeLimitMins <= 0)
+        return;
+
+      this.isCheckingTime = true;
+      try {
+        this.timeSpentMs = await this.storage.getTimeSpent(this.activeAdapter.id);
+
+        if (this.timeSpentMs >= this.timeLimitMins * 60 * 1000) {
+          void this.evaluateAndEnforceBlock('time');
+        }
+      } finally {
+        this.isCheckingTime = false;
+      }
+    }, 2000);
   }
 
   private async initializeState() {
@@ -151,17 +174,11 @@ export class AppOrchestrator {
         }
       }
 
-      if (
-        changes[`limitra_${pId}_time_limit`] ||
-        changes[`limitra_${pId}_enable_time`] ||
-        changes[`limitra_${pId}_time_spent`]
-      ) {
+      if (changes[`limitra_${pId}_time_limit`] || changes[`limitra_${pId}_enable_time`]) {
         if (changes[`limitra_${pId}_time_limit`])
           this.timeLimitMins = Number(changes[`limitra_${pId}_time_limit`].newValue) || 0;
         if (changes[`limitra_${pId}_enable_time`])
           this.isTimeEnabled = Boolean(changes[`limitra_${pId}_enable_time`].newValue);
-        if (changes[`limitra_${pId}_time_spent`])
-          this.timeSpentMs = Number(changes[`limitra_${pId}_time_spent`].newValue) || 0;
 
         if (
           this.isTimeEnabled &&
@@ -222,6 +239,8 @@ export class AppOrchestrator {
   }
 
   public destroy() {
+    if (this.timeCheckInterval) clearInterval(this.timeCheckInterval);
+
     if (this.storageListener) {
       this.storage.removeListener(this.storageListener);
       this.storageListener = null;

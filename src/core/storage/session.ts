@@ -56,7 +56,6 @@ export class SessionStorage {
     if (!lastReset || !nextReset || now >= nextReset) {
       for (const platform of platforms) {
         await this.stats.resetCount(platform);
-        await this.stats.setTimeSpent(platform, 0);
       }
 
       const intervalMs = await this.getDurationMs();
@@ -207,7 +206,7 @@ export class SessionStorage {
     if (!last || last === 0) return 0;
 
     const delta = Date.now() - last;
-    await this.stats.addTime(platform, delta);
+
     await this.driver.set<number>(key, 0);
 
     return delta;
@@ -228,9 +227,6 @@ export class SessionStorage {
     if (!last || last === 0) return;
 
     const now = Date.now();
-    const delta = now - last;
-
-    await this.stats.addTime(platform, delta);
     await this.driver.set<number>(key, now);
   }
 }

@@ -7,6 +7,7 @@ import { PlatformId, PLATFORMS_CONFIG } from '../../types';
 import { AnalyticsRepository } from '../interfaces/analytics-repository';
 import { AnalyticsService } from '../analytics/service';
 import { SubscriptionService } from '../subscription/service';
+import { UsageRuntimeService } from '../analytics/usage-runtime';
 
 export class StorageFacade {
   public settings: SettingsStorage;
@@ -14,6 +15,7 @@ export class StorageFacade {
   public session: SessionStorage;
   public security: SecurityStorage;
   public analyticsService?: AnalyticsService;
+  public usageRuntime?: UsageRuntimeService;
   public subscriptionService: SubscriptionService;
 
   constructor(public driver: StorageDriver) {
@@ -52,7 +54,7 @@ export class StorageFacade {
       const timeLimitMins = await this.settings.getTimeLimit(platform);
       if (timeLimitMins > 0) {
         hasTimeRule = true;
-        const timeSpentMs = await this.stats.getTimeSpent(platform);
+        const timeSpentMs = await this.getTimeSpent(platform);
         timeReached = timeSpentMs >= timeLimitMins * 60 * 1000;
       }
     }
@@ -196,19 +198,20 @@ export class StorageFacade {
     return this.stats.resetCount(platform);
   }
   async getTimeSpent(platform: PlatformId) {
-    return this.stats.getTimeSpent(platform);
-  }
-  async setTimeSpent(platform: PlatformId, ms: number) {
-    return this.stats.setTimeSpent(platform, ms);
-  }
-  async addTime(platform: PlatformId, ms: number) {
-    return this.stats.addTime(platform, ms);
+    if (this.usageRuntime) {
+      return this.usageRuntime.getExactTimeSpent(platform);
+    }
+    console.error(
+      `[StorageFacade] UsageRuntimeService is missing while querying time spent for ${platform}. Operation fell back to 0ms.`,
+    );
+    return 0;
   }
 
   // Analytics & Dependencies
   public setAnalyticsRepository(repo: AnalyticsRepository): void {
     this.session.setAnalyticsRepository(repo);
     this.analyticsService = new AnalyticsService(repo);
+    this.usageRuntime = new UsageRuntimeService(this.driver, this.analyticsService);
   }
 
   // Sessions

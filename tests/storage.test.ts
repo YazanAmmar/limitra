@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StorageFacade } from '../src/core/storage/index';
 import { ChromeStorageDriver } from '../src/adapters/chrome/storage-driver';
 import { PlatformId } from '../src/types';
+import { AnalyticsRepository } from '../src/core/interfaces/analytics-repository';
 
 const mockStorage: Record<string, unknown> = {};
 
@@ -28,8 +29,15 @@ describe('Scoped Storage Architecture (Multi-Platform Isolation)', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
 
+    const mockAnalyticsRepo = {
+      saveRecord: vi.fn().mockResolvedValue(undefined),
+      queryRecords: vi.fn().mockResolvedValue([]),
+      clearRecordsOlderThan: vi.fn(),
+    } as unknown as AnalyticsRepository;
+
     const driver = new ChromeStorageDriver();
     storage = new StorageFacade(driver);
+    storage.setAnalyticsRepository(mockAnalyticsRepo);
   });
 
   afterEach(() => {
@@ -95,6 +103,12 @@ describe('Scoped Storage Architecture (Multi-Platform Isolation)', () => {
   describe('Session Management & Scoped Time Tracking', () => {
     it('should track time independently per platform', async () => {
       vi.setSystemTime(new Date('2026-04-26T10:00:00Z'));
+
+      storage.usageRuntime!.getExactTimeSpent = vi.fn().mockImplementation(async (platform) => {
+        if (platform === YT) return 5 * 60 * 1000;
+        if (platform === IG) return 2 * 60 * 1000;
+        return 0;
+      });
 
       await storage.startSession(YT);
       vi.setSystemTime(new Date('2026-04-26T10:05:00Z'));

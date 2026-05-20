@@ -18,7 +18,7 @@ export class AnalyticsService {
    * A specific domain can be provided, or left undefined
    * to retrieve usage across all domains.
    */
-  public async getTodayUsage(platformId?: string): Promise<number> {
+  public async getTodayUsage(platformId?: string, excludeSessionId?: string): Promise<number> {
     const now = new Date();
 
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -27,7 +27,12 @@ export class AnalyticsService {
       fromTime: startOfDay,
       platformId: platformId,
     });
-    return AnalyticsAggregator.calculateTotalDuration(records);
+
+    const filteredRecords = excludeSessionId
+      ? records.filter((r) => r.id !== excludeSessionId)
+      : records;
+
+    return AnalyticsAggregator.calculateTotalDuration(filteredRecords);
   }
 
   /**

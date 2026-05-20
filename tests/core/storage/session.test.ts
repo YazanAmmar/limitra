@@ -31,9 +31,10 @@ describe('SessionStorage Core Logic (Session Stitching & Grace Period)', () => {
     } as unknown as StorageDriver;
 
     mockStats = {
-      addTime: vi.fn(),
+      getCount: vi.fn(),
+      setCount: vi.fn(),
+      incrementCount: vi.fn(),
       resetCount: vi.fn(),
-      setTimeSpent: vi.fn(),
     } as unknown as StatsStorage;
 
     mockAnalyticsRepo = {

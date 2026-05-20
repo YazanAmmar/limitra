@@ -98,8 +98,7 @@ export class BackgroundOrchestrator {
       for (const platform of platforms) {
         if (
           changes[`limitra_${platform}_time_limit`] ||
-          changes[`limitra_${platform}_enable_time`] ||
-          changes[`limitra_${platform}_time_spent`]
+          changes[`limitra_${platform}_enable_time`]
         ) {
           void this.checkTimeLimitForPlatform(platform);
         }
