@@ -81,6 +81,22 @@ export class SessionManager {
 
       const now = Date.now();
 
+      const pId = this.adapter.id;
+      const isLimitEnabled = await this.storage.getEnableLimit(pId);
+      const isTimeEnabled = await this.storage.getEnableTime(pId);
+      const currentLimit = await this.storage.getLimit(pId);
+      const timeLimitMins = await this.storage.getTimeLimit(pId);
+
+      const hasActiveRules =
+        (isLimitEnabled && currentLimit > 0) || (isTimeEnabled && timeLimitMins > 0);
+
+      if (!hasActiveRules) {
+        if (this.isTracking) {
+          await this.stopTracking();
+        }
+        return;
+      }
+
       if (now - this.lastHeartbeat > 5000 && this.isTracking) {
         console.warn('[Limitra] Sleep detected. Erasing time gap.');
         await this.stopTracking();

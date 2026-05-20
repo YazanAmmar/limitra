@@ -189,7 +189,8 @@ export class AnalyticsLoader {
       const progressFill = document.createElement('div');
       progressFill.className = 'breakdown-progress-fill';
 
-      progressFill.setAttribute('style', `--progress: ${percentage}%`);
+      progressFill.setAttribute('style', `width: ${percentage}%; --progress: ${percentage}%;`);
+      progressTrack.appendChild(progressFill);
 
       progressTrack.appendChild(progressFill);
 
