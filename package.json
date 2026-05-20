@@ -1,6 +1,6 @@
 {
   "name": "limitra",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "If willpower worked, you wouldn't be here. Set hard limits. Limitra enforces them.",
   "type": "module",
   "scripts": {

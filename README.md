@@ -45,7 +45,7 @@ Limitra is a Chromium extension designed to **enforce hard limits on how you spe
 
 ## Overview
 
-Limitra is a Chromium extension designed to **enforce hard limits on YouTube** - both Shorts and regular Watch pages.
+Limitra is a Chromium extension designed to enforce hard limits on high-distraction social media platforms like YouTube and Instagram.
 
 Instead of reminders or nudges, it applies strict blocking once your limits are reached - helping you break out of endless scrolling loops.
 
@@ -87,6 +87,14 @@ Configure your limits, tracking mode, block condition, block duration, theme, an
 <img width="720" alt="Settings Dashboard" src="assets/screenshots/settings.png" />
 </p>
 
+### Analytics Dashboard
+
+Track long-term usage patterns, session timelines, and platform-specific activity with interactive analytics.
+
+<p align="center">
+<img width="720" alt="Analytics Dashboard" src="assets/screenshots/analytics.png" />
+</p>
+
 ## Why Limitra?
 
 - **Hard limits that actually stop you**: playback is paused, muted, and blocked the moment you hit your limit.
@@ -110,12 +118,14 @@ Configure your limits, tracking mode, block condition, block duration, theme, an
 
 ### Platform Support
 
-- **YouTube Shorts**: tracks video count and session time with a 1.5-second watch threshold
-- **YouTube Watch**: tracks regular video viewing with a 10-second watch threshold
-- **Hot-swap detection**: automatically switches tracking context when navigating between Shorts and Watch without a page reload
+- **YouTube Shorts & Watch**: tracks video count and session time with specific watch thresholds (1.5s for Shorts, 10s for Watch).
+- **Instagram Reels & Feed**: full enforcement support for tracking scrolling and viewing behavior on Instagram.
+- **Hot-swap detection**: automatically switches tracking context when navigating between modes (e.g., Shorts to Watch) without a page reload.
 
 ### Tracking & Intelligence
 
+- Persistent IndexedDB-backed analytics engine with interactive platform breakdowns and long-term usage tracking.
+- **Session Stitching**: intelligently merges interrupted sessions across refreshes and tab switches within a 15-minute grace period.
 - `Strict`: tracks total time while the tab is open
 - `Playing Only`: counts only active playback time
 - `Smart`: tracks playback and meaningful interaction
@@ -237,12 +247,13 @@ npm test
 
 For full release notes, see [CHANGELOG.md](./CHANGELOG.md).
 
+- **1.2.0**: Full Instagram support, IndexedDB-backed analytics engine, interactive dashboard, and robust session stitching for multi-tab synchronization.
 - **1.1.0**: YouTube Watch support, flexible block conditions (AND/OR), customizable block duration, improved anti-bypass logic, new UI components (modal, tooltip), and major internal architecture upgrades.
 - **1.0.0**: First stable release with dual-limit enforcement, blocking overlay, anti-bypass protection, popup stats, settings dashboard, theme support, and English/Arabic localization.
 
 ## Roadmap
 
-- Expand beyond YouTube into other high-distraction platforms (TikTok, Instagram Reels, etc.)
+- Expand support to additional high-distraction platforms such as TikTok, X/Twitter, Reddit, and Facebook Reels.
 - Add richer analytics and historical usage views.
 - Improve anti-bypass hardening for more edge cases.
 - Introduce smarter recovery, reset, and scheduling options.

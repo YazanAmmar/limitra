@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/YazanAmmar/limitra/releases/tag/v1.2.0) - 2026-05-20
+
+### Added
+
+- **Full Instagram Support**: Limitra now supports both Instagram Reels and Feed tracking modes, with dedicated enforcement logic and platform-aware session tracking.
+- **Advanced Analytics Engine**: Introduced a persistent analytics system powered by `IndexedDB`, enabling accurate historical usage tracking, extensible reporting, and long-term behavioral insights.
+- **Interactive Analytics Dashboard**: Added platform breakdowns, expandable session timelines, daily filtering via interactive charts, and dynamic percentage metrics across all tracked platforms.
+- **Session Stitching & Continuity**: Added a 15-minute grace period system that intelligently merges interrupted sessions across refreshes, tab switches, and temporary disconnects.
+- **Multi-Tab Synchronization**: Session tracking is now synchronized across tabs to prevent duplicate timers, desynchronized counters, and inconsistent analytics.
+- **Subscription & Capability Foundations**: Introduced the foundational subscription policy engine for future premium plans, feature gating, and usage capabilities.
+- **Localized Analytics Experience**: Extended Arabic and English localization support across analytics views, dynamic time formatting, and platform selectors.
+
+### Changed
+
+- Unified runtime usage tracking and analytics into a single synchronized engine backed by `IndexedDB`, eliminating desynchronization between enforcement and analytics systems.
+- Replaced the legacy paused-session flow with a centralized shared-session architecture for more resilient session recovery and continuity handling.
+- Refactored the extension architecture to further isolate Chrome-specific APIs from UI and core logic using dedicated adapters and composition boundaries.
+- Improved popup context awareness: the popup now dynamically detects the active platform and adapts its controls automatically.
+- Refined dashboard rendering responsibilities by separating UI rendering logic from orchestration and state coordination layers.
+- Disabled destructive analytics cleanup behavior to preserve long-term behavioral history and future trend analysis.
+- Decoupled the repository structure by separating the marketing website from the extension codebase and removing unused website dependencies.
+
+## Fixed
+
+- Multi-tab desynchronization issues that could create duplicate sessions or incorrect runtime calculations.
+- Sleep-mode tracking inconsistencies by forcing proper session termination during suspended browser states.
+- Stale runtime synchronization scenarios that could trigger recursive recovery loops during usage reconciliation.
+- Tracking initialization when no active limits are configured, preventing unnecessary background activity.
+
 ## [1.1.0](https://github.com/YazanAmmar/limitra/releases/tag/v1.1.0) - 2026-04-29
 
 ### Added

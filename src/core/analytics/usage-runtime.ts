@@ -25,7 +25,7 @@ export class UsageRuntimeService {
     this.historicalCache.set(platform, ms);
   }
 
-  public async getExactTimeSpent(platform: PlatformId): Promise<number> {
+  public async getExactTimeSpent(platform: PlatformId, isRetry: boolean = false): Promise<number> {
     if (!this.historicalCache.has(platform)) {
       await this.refreshHistoricalCache(platform);
     }
@@ -42,8 +42,12 @@ export class UsageRuntimeService {
     let liveMs = 0;
     if (liveSession) {
       if (liveSession.id !== this.activeSessionIdCache.get(platform)) {
+        if (isRetry) {
+          console.error(`[UsageRuntime] Recursion aborted for ${platform}. State desync detected.`);
+          return historicalMs;
+        }
         await this.refreshHistoricalCache(platform);
-        return this.getExactTimeSpent(platform);
+        return this.getExactTimeSpent(platform, true);
       }
 
       liveMs = liveSession.accumulatedMs;
